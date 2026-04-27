@@ -32,3 +32,19 @@ a { text-decoration: none; color: inherit; }
 .p-avatar { width: 80px; height: 80px; background: #3ea6ff; border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 35px; }
 .profile-buttons { display: flex; gap: 10px; justify-content: center; }
 .profile-buttons button { background: #272727; color: white; border: none; padding: 10px 20px; border-radius: 20px; font-size: 13px; }
+
+/* Search Input Styling */
+input::placeholder { color: #888; }
+
+/* History Card Styling */
+.history-card div {
+    background-size: cover;
+    background-position: center;
+    border: 1px solid #333;
+}
+
+/* Animations for buttons */
+a:active {
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+}
