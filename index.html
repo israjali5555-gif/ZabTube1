@@ -3,60 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube Clone</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <header class="header">
-        <div class="logo">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg" width="90">
-        </div>
+        <div class="logo"><img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg" width="90"></div>
         <div class="header-icons">
             <span class="material-icons-outlined">cast</span>
-            <span class="material-icons-outlined">notifications</span>
-            <span class="material-icons-outlined">search</span>
-            <a href="profile.html" class="user-icon">R</a>
+            <a href="notifications.html"><span class="material-icons-outlined">notifications</span></a>
+            <a href="search.html"><span class="material-icons-outlined">search</span></a>
+            <a href="profile.html" class="user-profile-circle">R</a>
         </div>
     </header>
 
     <div class="categories">
         <button class="active">All</button>
         <button>Gaming</button>
-        <button>Mixes</button>
         <button>Live</button>
     </div>
 
     <main class="feed">
         <div class="video-card">
-            <div class="thumbnail" style="background:#222; height:210px;"></div>
+            <div class="thumbnail"></div>
             <div class="video-info">
                 <div class="channel-img"></div>
-                <div class="text">
-                    <h3>Ruffian Gaming Live Stream</h3>
-                    <p>Ruffian Gaming • 1.2M views • 2 hours ago</p>
-                </div>
+                <div class="text"><h3>Ruffian Gaming Live</h3><p>1.2M views • 2 hours ago</p></div>
             </div>
         </div>
     </main>
 
     <nav class="bottom-nav">
-        <a href="index.html" class="nav-item active">
-            <span class="material-icons-outlined">home</span><br>Home
-        </a>
-        <a href="shorts.html" class="nav-item">
-            <span class="material-icons-outlined">explore</span><br>Shorts
-        </a>
-        <div class="nav-item create-btn">
-            <span class="material-icons-outlined" style="font-size: 35px;">add_circle_outline</span>
-        </div>
-        <a href="#" class="nav-item">
-            <span class="material-icons-outlined">subscriptions</span><br>Subs
-        </a>
-        <a href="profile.html" class="nav-item">
-            <span class="material-icons-outlined">account_circle</span><br>You
-        </a>
+        <a href="index.html" class="nav-item active"><span class="material-icons-outlined">home</span><br>Home</a>
+        <a href="shorts.html" class="nav-item"><span class="material-icons-outlined">explore</span><br>Shorts</a>
+        <a href="upload.html" class="nav-item"><span class="material-icons-outlined" style="font-size:35px;">add_circle_outline</span></a>
+        <a href="#" class="nav-item"><span class="material-icons-outlined">subscriptions</span><br>Subs</a>
+        <a href="profile.html" class="nav-item"><span class="material-icons-outlined">account_circle</span><br>You</a>
     </nav>
 </body>
 </html>
-
