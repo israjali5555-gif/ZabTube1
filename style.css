@@ -1,50 +1,27 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { background-color: #0f0f0f; color: white; font-family: Roboto, Arial; padding-bottom: 70px; }
-a { text-decoration: none; color: inherit; }
+body { background-color: #0f0f0f; color: white; font-family: Roboto, Arial, sans-serif; padding-bottom: 70px; overflow-x: hidden; }
+a { text-decoration: none; color: inherit; display: inline-block; }
 
+/* Header Fix */
 .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; position: sticky; top: 0; background: #0f0f0f; z-index: 100; }
-.header-icons { display: flex; gap: 20px; align-items: center; }
-.material-icons-outlined { color: white; font-size: 24px; cursor: pointer; }
+.header-icons { display: flex; align-items: center; gap: 20px; }
+.material-icons-outlined { font-size: 24px; cursor: pointer; color: white; transition: 0.2s; }
+.material-icons-outlined:active { transform: scale(0.9); opacity: 0.7; }
 .user-profile-circle { background: #3ea6ff; padding: 4px 10px; border-radius: 50%; font-size: 14px; font-weight: bold; }
 
-.categories { display: flex; gap: 10px; padding: 12px; overflow-x: auto; border-bottom: 1px solid #272727; }
+/* Categories */
+.categories { display: flex; gap: 10px; padding: 12px; overflow-x: auto; white-space: nowrap; }
 .categories::-webkit-scrollbar { display: none; }
-.categories button { background: #272727; color: white; border: none; padding: 7px 15px; border-radius: 8px; font-size: 14px; white-space: nowrap; }
+.categories button { background: #272727; color: white; border: none; padding: 7px 15px; border-radius: 8px; font-size: 14px; }
 .categories button.active { background: white; color: black; }
 
+/* Video Feed */
+.video-card { margin-bottom: 10px; }
+.thumbnail { background: #222; width: 100%; height: 210px; position: relative; }
 .video-info { display: flex; padding: 12px; gap: 12px; }
-.channel-img { width: 38px; height: 38px; border-radius: 50%; background: #444; flex-shrink: 0; }
-.text h3 { font-size: 15px; font-weight: 500; margin-bottom: 4px; line-height: 1.3; }
-.text p { color: #aaa; font-size: 12px; }
+.channel-img { width: 36px; height: 36px; border-radius: 50%; background: #444; }
 
+/* Bottom Navigation (Working) */
 .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 55px; background: #0f0f0f; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #272727; z-index: 1000; }
-.nav-item { text-align: center; color: #aaaaaa; font-size: 10px; }
+.nav-item { text-align: center; color: #aaaaaa; font-size: 10px; width: 20%; }
 .nav-item.active { color: white; }
-
-/* Shorts UI Fixes */
-.shorts-ui-right { position: absolute; bottom: 100px; right: 15px; text-align: center; }
-.s-icon { margin-bottom: 20px; font-size: 12px; }
-.shorts-ui-bottom { position: absolute; bottom: 100px; left: 15px; }
-.subs-btn { background: red; color: white; border: none; padding: 7px 15px; border-radius: 20px; font-weight: bold; margin-top: 10px; }
-
-/* Profile Fixes */
-.profile-section { padding: 40px 20px; text-align: center; }
-.p-avatar { width: 80px; height: 80px; background: #3ea6ff; border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 35px; }
-.profile-buttons { display: flex; gap: 10px; justify-content: center; }
-.profile-buttons button { background: #272727; color: white; border: none; padding: 10px 20px; border-radius: 20px; font-size: 13px; }
-
-/* Search Input Styling */
-input::placeholder { color: #888; }
-
-/* History Card Styling */
-.history-card div {
-    background-size: cover;
-    background-position: center;
-    border: 1px solid #333;
-}
-
-/* Animations for buttons */
-a:active {
-    background: rgba(255,255,255,0.1);
-    border-radius: 50%;
-}
