@@ -26,25 +26,8 @@
     </div>
 
     <main class="feed" id="video-feed">
-        <div class="video-card">
-            <a href="player.html">
-                <div class="thumbnail-container">
-                    <video class="feed-video" muted loop playsinline poster="https://picsum.photos/seed/v1/400/225">
-                        <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
-                    </video>
-                    <span class="vid-time">10:45</span>
-                </div>
-            </a>
-            <div class="video-info">
-                <div class="channel-img" style="background-image: url('https://i.pravatar.cc/150?u=1');"></div>
-                <div class="text">
-                    <a href="player.html"><h3>Ruffian Gaming: Insane Clutch Win!</h3></a>
-                    <p>Ruffian Gaming • 1.2M views • 2 hours ago</p>
-                </div>
-            </div>
-        </div>
-        
-        </main>
+        <div id="loading-text" style="color:white; text-align:center; padding:50px;">YouTube Se Connect Ho Raha Hai...</div>
+    </main>
 
     <nav class="bottom-nav">
         <a href="index.html" class="nav-item active"><span class="material-icons-outlined">home</span><br>Home</a>
@@ -56,52 +39,60 @@
 
     <script>
         const feed = document.getElementById('video-feed');
-        
-        // Hazaaron videos ki list banane ke liye data (IDs badalti rahengi)
-        const videoLibrary = [
-            {id: 'qYv_Y4uL8Yk', title: 'Ishq Murshid - New Episode', channel: 'HUM TV', views: '15M'},
-            {id: 'lSIsXmX_Y7U', title: 'The Legend of Maula Jatt Official', channel: 'Movie Central', views: '8M'},
-            {id: 'X_9vV8H-a5w', title: 'Village Life in Pakistan 🇵🇰', channel: 'Daily Vlogs', views: '500K'},
-            {id: 'K4DyBUG242c', title: 'No Copyright Music - Best Beats', channel: 'NCS', views: '200M'},
-            {id: '7PCXmS50o70', title: 'Trending Drama Clip', channel: 'ARY Digital', views: '1M'}
-        ];
+        const loading = document.getElementById('loading-text');
 
-        // Is loop ko hum 1000 baar bhi chala sakte hain
-        function loadMoreVideos() {
-            for (let i = 0; i < 50; i++) { // Ek baar mein 50 naye video load honge
-                const randomVid = videoLibrary[Math.floor(Math.random() * videoLibrary.length)];
-                const card = `
-                    <div class="video-card">
-                        <a href="player.html?v=${randomVid.id}">
-                            <div class="thumbnail-container">
-                                <img src="https://img.youtube.com/vi/${randomVid.id}/maxresdefault.jpg" class="feed-video" style="width:100%;">
-                                <span class="vid-time">12:30</span>
+        // Ye function asli YouTube server (Piped API) se trending videos layega
+        async function loadRealLibrary() {
+            try {
+                // Free API jo bina card/key ke real YouTube data deti hai
+                const response = await fetch('https://pipedapi.kavin.rocks/trending?region=PK');
+                const videos = await response.json();
+                
+                loading.style.display = 'none'; // Loading text chhupao
+
+                videos.forEach(video => {
+                    // Link se Video ID nikalna
+                    const videoId = video.url.split('=')[1];
+                    
+                    const card = `
+                        <div class="video-card" style="margin-bottom: 25px;">
+                            <a href="player.html?v=${videoId}">
+                                <div class="thumbnail-container" style="position:relative;">
+                                    <img src="${video.thumbnail}" class="feed-video" style="width:100%; border-radius:0px;">
+                                    <span style="position:absolute; bottom:8px; right:8px; background:rgba(0,0,0,0.8); color:white; padding:2px 5px; font-size:12px; border-radius:4px;">
+                                        ${Math.floor(video.duration / 60)}:${(video.duration % 60).toString().padStart(2, '0')}
+                                    </span>
+                                </div>
+                            </a>
+                            <div class="video-info" style="display:flex; padding:12px; gap:12px;">
+                                <img src="${video.uploaderAvatar}" style="width:40px; height:40px; border-radius:50%; background:#333;">
+                                <div class="text">
+                                    <h3 style="font-size:15px; color:white; margin:0; line-height:1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                        ${video.title}
+                                    </h3>
+                                    <p style="font-size:12px; color:#aaa; margin-top:5px;">
+                                        ${video.uploaderName} • ${video.views.toLocaleString()} views
+                                    </p>
+                                </div>
                             </div>
-                        </a>
-                        <div class="video-info">
-                            <div class="channel-img" style="background-image: url('https://i.pravatar.cc/150?u=${Math.random()}');"></div>
-                            <div class="text">
-                                <h3>${randomVid.title} Part ${i + 1}</h3>
-                                <p>${randomVid.channel} • ${randomVid.views} views • Today</p>
-                            </div>
-                        </div>
-                    </div>`;
-                feed.innerHTML += card;
+                        </div>`;
+                    feed.innerHTML += card;
+                });
+            } catch (error) {
+                console.error("Connection Error:", error);
+                loading.innerText = "Internet Check Karein!";
             }
         }
 
-        // Puraana IntersectionObserver code (Jo aapke photo mein tha)
-        const videos = document.querySelectorAll('.feed-video');
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) entry.target.play();
-                else entry.target.pause();
-            });
-        }, { threshold: 0.7 });
-        videos.forEach(v => observer.observe(v));
+        // Automatic load start karein
+        loadRealLibrary();
 
-        // Nayi videos load karna
-        loadMoreVideos();
+        // Infinite Scroll: Jab user bottom tak pahuche, aur videos aayein
+        window.onscroll = function() {
+            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
+                // Aap chahein toh yahan aur category load karwa sakte hain
+            }
+        };
     </script>
 </body>
 </html>
