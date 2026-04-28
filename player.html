@@ -7,19 +7,17 @@
     <link rel="stylesheet" href="style.css">
     <title>Playing Video...</title>
 </head>
-<body style="background:#0f0f0f; padding-bottom: 70px;">
+<body style="background:#0F0F0F; padding-bottom: 70px;">
 
-    <div class="main-video-container" style="position: sticky; top: 0; z-index: 100; background: #000;">
-        <video id="mainPlayer" controls autoplay style="width: 100%; aspect-ratio: 16/9;">
-            <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
+    <div class="main-video-container" style="position: sticky; top: 0; z-index: 100; background: #000; width: 100%; aspect-ratio: 16/9;">
+        <div id="player" style="width: 100%; height: 100%;">
+            </div>
     </div>
 
     <div class="video-details" style="padding: 12px;">
-        <h3 style="font-size: 16px;">Ruffian Gaming: Best Win Ever! | Highlights 2026</h3>
+        <h3 id="vid-title" style="font-size: 16px; color:white;">Loading Video...</h3>
         <p style="color: #aaa; font-size: 12px; margin-top: 5px;">1.5M views • 2 hours ago</p>
-        
+
         <div style="display: flex; gap: 10px; overflow-x: auto; margin-top: 15px; padding-bottom: 5px;">
             <button class="action-btn"><span class="material-icons-outlined">thumb_up</span> 12K</button>
             <button class="action-btn"><span class="material-icons-outlined">thumb_down</span></button>
@@ -29,37 +27,51 @@
 
         <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 15px; border-top: 1px solid #333; padding-top: 15px;">
             <div style="display: flex; align-items: center; gap: 10px;">
-                <div class="channel-img" style="background:#3ea6ff; width: 35px; height: 35px; border-radius: 50%;"></div>
+                <div id="channel-icon" style="width: 35px; height: 35px; border-radius: 50%; background:#3ea6ff;"></div>
                 <div>
-                    <p style="font-weight: bold; font-size: 14px;">Ruffian Gaming</p>
-                    <p style="color: #aaa; font-size: 11px;">2.4M subscribers</p>
+                    <p id="channel-name" style="font-weight: bold; font-size: 14px; color:white; margin:0;">Real Channel</p>
+                    <p style="color: #aaa; font-size: 11px; margin:0;">2.4M subscribers</p>
                 </div>
             </div>
-            <button style="background: white; color: black; border: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 13px;">Subscribe</button>
+            <button style="background: white; color: black; border: none; padding: 8px 16px; border-radius: 20px; font-weight: bold;">Subscribe</button>
         </div>
     </div>
 
     <hr style="border: 0; border-top: 1px solid #333; margin: 10px 0;">
 
     <div class="suggested-section" style="padding: 10px;">
-        <h4 style="margin-bottom: 15px; font-size: 15px;">Up next</h4>
-        
-        <div onclick="location.reload()" style="display: flex; gap: 10px; margin-bottom: 15px;">
-            <div style="width: 160px; height: 90px; background: #222; border-radius: 8px; flex-shrink: 0;"></div>
-            <div>
-                <p style="font-size: 13px; font-weight: 500;">PUBG Mobile: New Map Leak!</p>
-                <p style="color: #aaa; font-size: 11px; margin-top: 4px;">Gaming Zone • 45K views</p>
-            </div>
+        <h4 style="margin-bottom: 15px; font-size: 15px; color:white;">Up next</h4>
         </div>
-    </div>
 
     <nav class="bottom-nav">
         <a href="index.html" class="nav-item"><span class="material-icons-outlined">home</span><br>Home</a>
         <a href="shorts.html" class="nav-item"><span class="material-icons-outlined">explore</span><br>Shorts</a>
-        <a href="upload.html" class="nav-item"><span class="material-icons-outlined" style="font-size:35px;">add_circle_outline</span></a>
+        <a href="upload.html" class="nav-item icon-btn"><span class="material-icons-outlined" style="font-size:38px;">add_circle_outline</span></a>
         <a href="subscriptions.html" class="nav-item"><span class="material-icons-outlined">subscriptions</span><br>Subs</a>
         <a href="profile.html" class="nav-item"><span class="material-icons-outlined">account_circle</span><br>You</a>
     </nav>
 
+    <script>
+        // 1. URL se Video ID uthana (Ye sabse zaroori hai)
+        const params = new URLSearchParams(window.location.search);
+        const videoId = params.get('v');
+
+        if (videoId) {
+            // 2. Asli YouTube Player ko load karna
+            document.getElementById('player').innerHTML = `
+                <iframe width="100%" height="100%" 
+                    src="https://www.youtube.com/embed/${videoId}?autoplay=1" 
+                    title="YouTube video player" frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen>
+                </iframe>`;
+            
+            // 3. Title update karna
+            document.getElementById('vid-title').innerText = "Now Playing Video";
+        } else {
+            document.getElementById('vid-title').innerText = "Error: Video Not Found!";
+        }
+    </script>
 </body>
 </html>
+
