@@ -26,7 +26,7 @@
     </div>
 
     <main class="feed" id="video-feed">
-        <div id="loading" style="color:white; text-align:center; padding:50px;">Real Videos Load Ho Rahi Hain...</div>
+        <div id="status-msg" style="color:white; text-align:center; padding:50px;">Real Videos Connect Ho Rahi Hain...</div>
     </main>
 
     <nav class="bottom-nav">
@@ -39,66 +39,49 @@
 
     <script>
         const feed = document.getElementById('video-feed');
-        const loading = document.getElementById('loading');
+        const msg = document.getElementById('status-msg');
 
-        // Ye list un channels ki hai jinki videos aap automatic dikhana chahte hain
-        const channelIds = [
-            'UCq-Fj5jknLsUf-MWSy4_brA', // T-Series
-            'UC_aEa8K-EOJ3D6gOs7HcyNg', // HUM TV
-            'UCeVMnSShP_I8uyEQbbQjwGg', // ARY Digital
-            'UC6769f5b66d66e7b7b123456'  // Backup ID
-        ];
+        // Ye list un channels ki hai jinka data 100% stable aata hai
+        const channels = ['UCq-Fj5jknLsUf-MWSy4_brA', 'UC_aEa8K-EOJ3D6gOs7HcyNg', 'UCeVMnSShP_I8uyEQbbQjwGg'];
 
-        async function loadYouTubeHome() {
+        async function fetchVideos() {
             try {
-                feed.innerHTML = ''; // Pehle load message saaf karein
-                
-                for (let cid of channelIds) {
-                    // RSS se Real Data nikalne ka free tarika
-                    const rssUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${cid}`;
-                    const proxyUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
+                let allContent = "";
+                for (let id of channels) {
+                    // RSS proxy ka use kar rahe hain jo sabse zyada stable hai
+                    const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://www.youtube.com/feeds/videos.xml?channel_id=${id}`);
+                    const data = await res.json();
                     
-                    const response = await fetch(proxyUrl);
-                    const data = await response.json();
-
                     if (data.items) {
-                        data.items.forEach(item => {
-                            const videoId = item.link.split('v=')[1];
-                            const title = item.title;
-                            const channelName = item.author;
-                            const thumbnail = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-
-                            const card = `
-                                <div class="video-card" style="margin-bottom:25px;">
-                                    <a href="player.html?v=${videoId}">
-                                        <div class="thumbnail-container">
-                                            <img src="${thumbnail}" style="width:100%; display:block;">
-                                            <span class="vid-time" style="position:absolute; bottom:8px; right:8px; background:rgba(0,0,0,0.8); color:white; padding:2px 5px; font-size:12px; border-radius:4px;">12:00</span>
-                                        </div>
-                                    </a>
-                                    <div class="video-info" style="display:flex; padding:12px; gap:12px;">
-                                        <div style="width:36px; height:36px; border-radius:50%; background:#444; flex-shrink:0;">
-                                            <img src="https://i.pravatar.cc/100?u=${channelName}" style="width:100%; border-radius:50%;">
-                                        </div>
-                                        <div class="text">
-                                            <h3 style="font-size:14px; color:white; margin:0; line-height:1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${title}</h3>
-                                            <p style="font-size:12px; color:#aaa; margin-top:4px;">${channelName} • Real Channel</p>
-                                        </div>
+                        data.items.forEach(v => {
+                            const vId = v.link.split('v=')[1];
+                            allContent += `
+                            <div class="video-card" style="margin-bottom:20px;">
+                                <a href="player.html?v=${vId}">
+                                    <div class="thumbnail-container">
+                                        <img src="https://img.youtube.com/vi/${vId}/maxresdefault.jpg" style="width:100%; display:block;">
                                     </div>
-                                </div>`;
-                            feed.innerHTML += card;
+                                </a>
+                                <div class="video-info" style="display:flex; padding:12px; gap:12px;">
+                                    <div style="width:36px; height:36px; border-radius:50%; background:#333; overflow:hidden;">
+                                        <img src="https://i.pravatar.cc/100?u=${v.author}" style="width:100%;">
+                                    </div>
+                                    <div class="text">
+                                        <h3 style="font-size:14px; color:white; margin:0; line-height:1.4;">${v.title}</h3>
+                                        <p style="font-size:12px; color:#aaa; margin-top:4px;">${v.author} • Latest Video</p>
+                                    </div>
+                                </div>
+                            </div>`;
                         });
                     }
                 }
-            } catch (error) {
-                console.error("Error:", error);
-                feed.innerHTML = "<p style='color:white; text-align:center;'>Ek baar page refresh karein!</p>";
+                feed.innerHTML = allContent;
+            } catch (err) {
+                msg.innerText = "Connection Slow Hai. Refresh Karein.";
             }
         }
 
-        // Run on load
-        loadYouTubeHome();
+        window.onload = fetchVideos;
     </script>
 </body>
 </html>
-
