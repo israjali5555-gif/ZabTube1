@@ -26,7 +26,7 @@
     </div>
 
     <main class="feed" id="video-feed">
-        <div id="loading-text" style="color:white; text-align:center; padding:50px;">YouTube Se Connect Ho Raha Hai...</div>
+        <div id="loading" style="color:white; text-align:center; padding:50px;">YouTube Se Connect Ho Raha Hai...</div>
     </main>
 
     <nav class="bottom-nav">
@@ -39,60 +39,59 @@
 
     <script>
         const feed = document.getElementById('video-feed');
-        const loading = document.getElementById('loading-text');
+        const loading = document.getElementById('loading');
 
-        // Ye function asli YouTube server (Piped API) se trending videos layega
-        async function loadRealLibrary() {
-            try {
-                // Free API jo bina card/key ke real YouTube data deti hai
-                const response = await fetch('https://pipedapi.kavin.rocks/trending?region=PK');
-                const videos = await response.json();
-                
-                loading.style.display = 'none'; // Loading text chhupao
+        async function fetchRealVideos() {
+            // Hum multiple servers try karenge taaki "Internet Check" wala error na aaye
+            const urls = [
+                'https://pipedapi.kavin.rocks/trending?region=IN',
+                'https://yt.artemislena.eu/api/v1/trending?region=IN',
+                'https://invidious.snopyta.org/api/v1/trending'
+            ];
 
-                videos.forEach(video => {
-                    // Link se Video ID nikalna
-                    const videoId = video.url.split('=')[1];
+            for (let url of urls) {
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) continue;
                     
-                    const card = `
-                        <div class="video-card" style="margin-bottom: 25px;">
+                    const videos = await response.json();
+                    loading.style.display = 'none';
+                    feed.innerHTML = ''; // Pehle wala content clear karein
+
+                    videos.forEach(video => {
+                        // Link se Video ID nikalna
+                        const videoId = video.url ? video.url.split('=')[1] : video.videoId;
+                        if (!videoId) return;
+
+                        const card = `
+                        <div class="video-card" style="margin-bottom:20px;">
                             <a href="player.html?v=${videoId}">
-                                <div class="thumbnail-container" style="position:relative;">
+                                <div class="thumbnail-container">
                                     <img src="${video.thumbnail}" class="feed-video" style="width:100%; border-radius:0px;">
-                                    <span style="position:absolute; bottom:8px; right:8px; background:rgba(0,0,0,0.8); color:white; padding:2px 5px; font-size:12px; border-radius:4px;">
-                                        ${Math.floor(video.duration / 60)}:${(video.duration % 60).toString().padStart(2, '0')}
-                                    </span>
+                                    <span class="vid-time">${video.duration ? Math.floor(video.duration/60) + ":" + (video.duration%60).toString().padStart(2,'0') : 'LIVE'}</span>
                                 </div>
                             </a>
                             <div class="video-info" style="display:flex; padding:12px; gap:12px;">
-                                <img src="${video.uploaderAvatar}" style="width:40px; height:40px; border-radius:50%; background:#333;">
+                                <img src="${video.uploaderAvatar || 'https://i.pravatar.cc/100'}" style="width:36px; height:36px; border-radius:50%; background:#333;">
                                 <div class="text">
-                                    <h3 style="font-size:15px; color:white; margin:0; line-height:1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                                        ${video.title}
-                                    </h3>
-                                    <p style="font-size:12px; color:#aaa; margin-top:5px;">
-                                        ${video.uploaderName} • ${video.views.toLocaleString()} views
-                                    </p>
+                                    <h3 style="font-size:14px; color:white; margin:0; line-height:1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${video.title}</h3>
+                                    <p style="font-size:12px; color:#aaa; margin-top:4px;">${video.uploaderName} • ${video.views.toLocaleString()} views</p>
                                 </div>
                             </div>
                         </div>`;
-                    feed.innerHTML += card;
-                });
-            } catch (error) {
-                console.error("Connection Error:", error);
-                loading.innerText = "Internet Check Karein!";
+                        feed.innerHTML += card;
+                    });
+                    return; // Agar ek server se data aa gaya toh loop rok do
+                } catch (e) {
+                    console.log("Next server trying...");
+                }
             }
+            // Agar koi server na chale
+            loading.innerText = "Abhi Server Busy Hai, Thodi der baad refresh karein.";
         }
 
-        // Automatic load start karein
-        loadRealLibrary();
-
-        // Infinite Scroll: Jab user bottom tak pahuche, aur videos aayein
-        window.onscroll = function() {
-            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
-                // Aap chahein toh yahan aur category load karwa sakte hain
-            }
-        };
+        // Run function
+        fetchRealVideos();
     </script>
 </body>
 </html>
