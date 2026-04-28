@@ -32,3 +32,32 @@ a { text-decoration: none; color: inherit; display: inline-block; width: 100%; }
 
 /* Player Page Buttons */
 .action-btn { background: #272727; color: white; border: none; padding: 8px 15px; border-radius: 20px; display: flex; align-items: center; gap: 8px; font-size: 13px; }
+
+/* Purani CSS ke saath ise jodein ya replace karein */
+.icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-decoration: none;
+}
+
+.nav-item {
+    text-align: center;
+    color: #aaaaaa;
+    text-decoration: none;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-item.active {
+    color: white;
+}
+
+/* Isse click karne par halka highlight hoga */
+.nav-item:active, .icon-btn:active {
+    opacity: 0.6;
+}
