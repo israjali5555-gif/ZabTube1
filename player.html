@@ -5,43 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <title>Playing Video...</title>
+    <title>Playing...</title>
 </head>
-<body style="background:#0F0F0F; padding-bottom: 70px;">
+<body style="background:#0F0F0F; color:white; padding-bottom:70px;">
+    <div id="player-box" style="width:100%; aspect-ratio:16/9; background:#000; position:sticky; top:0; z-index:100;"></div>
 
-    <div class="main-video-container" style="position: sticky; top: 0; z-index: 100; background: #000; width: 100%; aspect-ratio: 16/9;">
-        <div id="player" style="width: 100%; height: 100%;">
-            </div>
-    </div>
+    <div style="padding:12px;">
+        <h3 id="v-title" style="font-size:17px; margin:0; line-height:1.4;">Real Video Title</h3>
+        <p style="color:#aaa; font-size:12px; margin:8px 0;">1.5M views • 2 hours ago</p>
 
-    <div class="video-details" style="padding: 12px;">
-        <h3 id="vid-title" style="font-size: 16px; color:white;">Loading Video...</h3>
-        <p style="color: #aaa; font-size: 12px; margin-top: 5px;">1.5M views • 2 hours ago</p>
-
-        <div style="display: flex; gap: 10px; overflow-x: auto; margin-top: 15px; padding-bottom: 5px;">
-            <button class="action-btn"><span class="material-icons-outlined">thumb_up</span> 12K</button>
-            <button class="action-btn"><span class="material-icons-outlined">thumb_down</span></button>
+        <div style="display:flex; gap:10px; overflow-x:auto; padding:10px 0;">
+            <button class="action-btn" onclick="this.style.color='#3ea6ff'"><span class="material-icons-outlined">thumb_up</span> 12K</button>
             <button class="action-btn"><span class="material-icons-outlined">share</span> Share</button>
             <button class="action-btn"><span class="material-icons-outlined">download</span> Download</button>
         </div>
 
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 15px; border-top: 1px solid #333; padding-top: 15px;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <div id="channel-icon" style="width: 35px; height: 35px; border-radius: 50%; background:#3ea6ff;"></div>
+        <div style="display:flex; align-items:center; justify-content:space-between; border-top:1px solid #333; padding:15px 0; margin-top:10px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <img id="c-img" src="" style="width:40px; height:40px; border-radius:50%; background:#333;">
                 <div>
-                    <p id="channel-name" style="font-weight: bold; font-size: 14px; color:white; margin:0;">Real Channel</p>
-                    <p style="color: #aaa; font-size: 11px; margin:0;">2.4M subscribers</p>
+                    <p id="c-name" style="font-weight:bold; font-size:15px; margin:0;">Channel Name</p>
+                    <p style="color:#aaa; font-size:11px; margin:0;">2.4M subscribers</p>
                 </div>
             </div>
-            <button style="background: white; color: black; border: none; padding: 8px 16px; border-radius: 20px; font-weight: bold;">Subscribe</button>
+            <button style="background:white; color:black; border:none; padding:8px 16px; border-radius:20px; font-weight:bold;">Subscribe</button>
         </div>
     </div>
 
-    <hr style="border: 0; border-top: 1px solid #333; margin: 10px 0;">
-
-    <div class="suggested-section" style="padding: 10px;">
-        <h4 style="margin-bottom: 15px; font-size: 15px; color:white;">Up next</h4>
-        </div>
+    <div style="padding:12px; border-top:4px solid #222;">
+        <h4 style="margin-bottom:15px; font-size:16px;">Up next</h4>
+        <div id="next-list"></div>
+    </div>
 
     <nav class="bottom-nav">
         <a href="index.html" class="nav-item"><span class="material-icons-outlined">home</span><br>Home</a>
@@ -52,25 +46,28 @@
     </nav>
 
     <script>
-        // 1. URL se Video ID uthana (Ye sabse zaroori hai)
         const params = new URLSearchParams(window.location.search);
-        const videoId = params.get('v');
+        const vId = params.get('v');
+        const vTitle = params.get('t');
+        const vChan = params.get('c');
 
-        if (videoId) {
-            // 2. Asli YouTube Player ko load karna
-            document.getElementById('player').innerHTML = `
-                <iframe width="100%" height="100%" 
-                    src="https://www.youtube.com/embed/${videoId}?autoplay=1" 
-                    title="YouTube video player" frameborder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                    allowfullscreen>
-                </iframe>`;
-            
-            // 3. Title update karna
-            document.getElementById('vid-title').innerText = "Now Playing Video";
-        } else {
-            document.getElementById('vid-title').innerText = "Error: Video Not Found!";
+        if(vId){
+            document.getElementById('player-box').innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube.com/embed/${vId}?autoplay=1" frameborder="0" allowfullscreen></iframe>`;
+            document.getElementById('v-title').innerText = decodeURIComponent(vTitle);
+            document.getElementById('c-name').innerText = decodeURIComponent(vChan);
+            document.getElementById('c-img').src = `https://i.pravatar.cc/100?u=${vChan}`;
         }
+
+        // Automatic List Generation
+        const dummy = [{id:'K4DyBUG242c',t:'Trending Now',c:'YT Pro'},{id:'qYv_Y4uL8Yk',t:'Latest Music 2026',c:'Music Lab'}];
+        let h = "";
+        dummy.forEach(s => {
+            h += `<div onclick="location.href='player.html?v=${s.id}&t=${s.t}&c=${s.c}'" style="display:flex; gap:12px; margin-bottom:15px;">
+                <img src="https://img.youtube.com/vi/${s.id}/mqdefault.jpg" style="width:150px; border-radius:8px;">
+                <div><p style="font-size:14px; margin:0; font-weight:500;">${s.t}</p><p style="font-size:12px; color:#aaa; margin:5px 0;">${s.c}</p></div>
+            </div>`;
+        });
+        document.getElementById('next-list').innerHTML = h;
     </script>
 </body>
 </html>
