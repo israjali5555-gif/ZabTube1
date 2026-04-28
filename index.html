@@ -12,8 +12,8 @@
         <div class="logo"><img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg" width="90"></div>
         <div class="header-icons">
             <span class="material-icons-outlined">cast</span>
-            <a href="notifications.html" class="icon-btn"><span class="material-icons-outlined">notifications</span></a>
-            <a href="search.html" class="icon-btn"><span class="material-icons-outlined">search</span></a>
+            <a href="notifications.html"><span class="material-icons-outlined">notifications</span></a>
+            <a href="search.html"><span class="material-icons-outlined">search</span></a>
             <a href="profile.html" class="user-profile-circle">R</a>
         </div>
     </header>
@@ -25,7 +25,7 @@
         <button>Live</button>
     </div>
 
-    <main class="feed">
+    <main class="feed" id="video-feed">
         <div class="video-card">
             <a href="player.html">
                 <div class="thumbnail-container">
@@ -43,25 +43,65 @@
                 </div>
             </div>
         </div>
-    </main>
+        
+        </main>
 
     <nav class="bottom-nav">
         <a href="index.html" class="nav-item active"><span class="material-icons-outlined">home</span><br>Home</a>
         <a href="shorts.html" class="nav-item"><span class="material-icons-outlined">explore</span><br>Shorts</a>
-        <a href="upload.html" class="nav-item"><span class="material-icons-outlined" style="font-size:38px;">add_circle_outline</span></a>
+        <a href="upload.html" class="nav-item icon-btn"><span class="material-icons-outlined" style="font-size:38px;">add_circle_outline</span></a>
         <a href="subscriptions.html" class="nav-item"><span class="material-icons-outlined">subscriptions</span><br>Subs</a>
         <a href="profile.html" class="nav-item"><span class="material-icons-outlined">account_circle</span><br>You</a>
     </nav>
 
     <script>
+        const feed = document.getElementById('video-feed');
+        
+        // Hazaaron videos ki list banane ke liye data (IDs badalti rahengi)
+        const videoLibrary = [
+            {id: 'qYv_Y4uL8Yk', title: 'Ishq Murshid - New Episode', channel: 'HUM TV', views: '15M'},
+            {id: 'lSIsXmX_Y7U', title: 'The Legend of Maula Jatt Official', channel: 'Movie Central', views: '8M'},
+            {id: 'X_9vV8H-a5w', title: 'Village Life in Pakistan 🇵🇰', channel: 'Daily Vlogs', views: '500K'},
+            {id: 'K4DyBUG242c', title: 'No Copyright Music - Best Beats', channel: 'NCS', views: '200M'},
+            {id: '7PCXmS50o70', title: 'Trending Drama Clip', channel: 'ARY Digital', views: '1M'}
+        ];
+
+        // Is loop ko hum 1000 baar bhi chala sakte hain
+        function loadMoreVideos() {
+            for (let i = 0; i < 50; i++) { // Ek baar mein 50 naye video load honge
+                const randomVid = videoLibrary[Math.floor(Math.random() * videoLibrary.length)];
+                const card = `
+                    <div class="video-card">
+                        <a href="player.html?v=${randomVid.id}">
+                            <div class="thumbnail-container">
+                                <img src="https://img.youtube.com/vi/${randomVid.id}/maxresdefault.jpg" class="feed-video" style="width:100%;">
+                                <span class="vid-time">12:30</span>
+                            </div>
+                        </a>
+                        <div class="video-info">
+                            <div class="channel-img" style="background-image: url('https://i.pravatar.cc/150?u=${Math.random()}');"></div>
+                            <div class="text">
+                                <h3>${randomVid.title} Part ${i + 1}</h3>
+                                <p>${randomVid.channel} • ${randomVid.views} views • Today</p>
+                            </div>
+                        </div>
+                    </div>`;
+                feed.innerHTML += card;
+            }
+        }
+
+        // Puraana IntersectionObserver code (Jo aapke photo mein tha)
         const videos = document.querySelectorAll('.feed-video');
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
-                if (entry.isIntersecting) { entry.target.play(); } 
-                else { entry.target.pause(); }
+                if (entry.isIntersecting) entry.target.play();
+                else entry.target.pause();
             });
         }, { threshold: 0.7 });
         videos.forEach(v => observer.observe(v));
+
+        // Nayi videos load karna
+        loadMoreVideos();
     </script>
 </body>
 </html>
