@@ -4,80 +4,139 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-    <title>Custom Player</title>
+    <title>Custom YouTube Player</title>
     <style>
-        .player-wrapper { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; overflow: hidden; }
-        iframe { width: 100%; height: 110%; border: none; position: absolute; top: -5%; pointer-events: none; }
-        .custom-overlay { 
+        body { background:#0F0F0F; color:white; margin:0; font-family: sans-serif; overflow-x: hidden; }
+        /* Video Container */
+        .video-wrapper { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; }
+        iframe { width: 100%; height: 100%; border: none; pointer-events: none; }
+        
+        /* Custom Controls Overlay */
+        .video-overlay { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            display: flex; align-items: center; justify-content: center; 
-            background: rgba(0,0,0,0.1); z-index: 10; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; z-index: 10;
         }
-        .my-play-btn { font-size: 65px; color: white; filter: drop-shadow(0 0 10px rgba(0,0,0,0.5)); }
-        .action-btn { background: #272727; border: none; color: white; padding: 8px 18px; border-radius: 20px; display: flex; align-items: center; font-size: 13px; }
+        .play-pause-btn { font-size: 60px; color: white; opacity: 0; transition: 0.3s; pointer-events: none; }
+        .show-icon { opacity: 1; }
+
+        /* Buttons Styling */
+        .action-bar { display: flex; gap: 10px; padding: 15px; overflow-x: auto; scrollbar-width: none; }
+        .action-bar::-webkit-scrollbar { display: none; }
+        .yt-btn { background: #272727; border: none; color: white; padding: 8px 16px; border-radius: 20px; display: flex; align-items: center; font-size: 13px; white-space: nowrap; cursor: pointer; }
+        
+        /* Suggested List */
+        .list-item { display: flex; gap: 12px; margin-bottom: 15px; text-decoration: none; color: white; padding: 0 15px; }
+        .thumb-box { position: relative; min-width: 160px; height: 90px; }
+        .thumb-box img { width: 100%; height: 100%; border-radius: 8px; object-fit: cover; }
+        .duration-tag { position: absolute; bottom: 5px; right: 5px; background: rgba(0,0,0,0.8); font-size: 10px; padding: 2px 4px; border-radius: 4px; }
     </style>
 </head>
-<body style="background:#0F0F0F; color:white; margin:0; padding-bottom:80px;">
+<body>
 
-    <div class="player-wrapper" onclick="handleVideo()">
-        <div id="yt-container"></div>
-        <div class="custom-overlay" id="ui-overlay">
-            <span class="material-icons-outlined my-play-btn" id="ctrl-icon">play_arrow</span>
+    <div class="video-wrapper" onclick="controlVideo()">
+        <div id="yt-player-frame" style="width:100%; height:100%;"></div>
+        <div class="video-overlay">
+            <span class="material-icons-outlined play-pause-btn" id="overlay-icon">play_arrow</span>
         </div>
     </div>
 
     <div style="padding:15px;">
-        <h2 id="v-title" style="font-size:18px; font-weight:500; margin:0;">Loading...</h2>
-        
-        <div style="display:flex; gap:10px; margin:15px 0; overflow-x:auto;">
-            <button class="action-btn"><span class="material-icons-outlined" style="margin-right:5px;">thumb_up</span> 12K</button>
-            <button class="action-btn"><span class="material-icons-outlined" style="margin-right:5px;">share</span> Share</button>
-            <button class="action-btn"><span class="material-icons-outlined" style="margin-right:5px;">download</span> Download</button>
-        </div>
-
-        <div style="display:flex; align-items:center; gap:12px; border-top:1px solid #272727; padding-top:15px;">
-            <img id="c-img" src="" style="width:40px; height:40px; border-radius:50%;">
-            <p id="c-name" style="font-weight:bold; flex:1; font-size:15px;">Channel</p>
-            <button style="background:white; color:black; border:none; padding:8px 16px; border-radius:20px; font-weight:bold;">Subscribe</button>
-        </div>
+        <h2 id="v-title" style="font-size:18px; margin:0; line-height:1.4; font-weight:500;">Loading Title...</h2>
+        <p style="color:#aaa; font-size:12px; margin:8px 0;">1.5M views • 2 hours ago</p>
     </div>
 
-    <div id="next-list" style="padding:12px; border-top:4px solid #272727;"></div>
+    <div class="action-bar">
+        <button class="yt-btn"><span class="material-icons-outlined" style="margin-right:6px;">thumb_up</span> 12K</button>
+        <button class="yt-btn"><span class="material-icons-outlined" style="margin-right:6px;">share</span> Share</button>
+        <button class="yt-btn"><span class="material-icons-outlined" style="margin-right:6px;">download</span> Download</button>
+        <button class="yt-btn"><span class="material-icons-outlined" style="margin-right:6px;">library_add</span> Save</button>
+    </div>
+
+    <div style="padding:15px; display:flex; align-items:center; justify-content:space-between;">
+        <div style="display:flex; align-items:center; gap:12px;">
+            <img id="c-img" src="" style="width:40px; height:40px; border-radius:50%; background:#333;">
+            <div>
+                <p id="c-name" style="font-weight:bold; margin:0; font-size:15px;">Channel</p>
+                <p style="color:#aaa; font-size:11px; margin:0;">2.4M subscribers</p>
+            </div>
+        </div>
+        <button style="background:white; color:black; border:none; padding:8px 16px; border-radius:20px; font-weight:bold;">Subscribe</button>
+    </div>
+
+    <div style="padding:15px; border-top:4px solid #222;">
+        <h3 style="font-size:16px; margin-bottom:15px;">Up next</h3>
+        <div id="suggestions-container"></div>
+    </div>
 
     <script>
-        const params = new URLSearchParams(window.location.search);
-        const vid = params.get('v');
-        let playing = false;
+        const urlParams = new URLSearchParams(window.location.search);
+        const videoId = urlParams.get('v');
+        let player;
+        let isVideoPlaying = false;
 
-        if(vid) {
-            // Modestbranding aur controls=0 se YouTube UI gayab
-            document.getElementById('yt-container').innerHTML = `
-                <iframe id="video-frame" src="https://www.youtube.com/embed/${vid}?enablejsapi=1&controls=0&modestbranding=1&rel=0&iv_load_policy=3" allow="autoplay"></iframe>`;
-            document.getElementById('v-title').innerText = decodeURIComponent(params.get('t'));
-            document.getElementById('c-name').innerText = decodeURIComponent(params.get('c'));
-            document.getElementById('c-img').src = `https://i.pravatar.cc/100?u=${params.get('c')}`;
+        // Load YouTube API
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('yt-player-frame', {
+                height: '100%',
+                width: '100%',
+                videoId: videoId,
+                playerVars: { 'autoplay': 1, 'controls': 0, 'modestbranding': 1, 'rel': 0, 'iv_load_policy': 3 },
+                events: { 'onReady': (event) => {
+                    event.target.mute(); // Autoplay fix
+                    event.target.playVideo();
+                    isVideoPlaying = true;
+                }}
+            });
         }
 
-        function handleVideo() {
-            const frame = document.getElementById('video-frame').contentWindow;
-            const icon = document.getElementById('ctrl-icon');
-            const overlay = document.getElementById('ui-overlay');
-
-            if(!playing) {
-                frame.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+        function controlVideo() {
+            const icon = document.getElementById('overlay-icon');
+            if (isVideoPlaying) {
+                player.pauseVideo();
                 icon.innerText = "pause";
-                overlay.style.background = "transparent";
-                setTimeout(() => { overlay.style.opacity = "0"; }, 800);
-                playing = true;
+                isVideoPlaying = false;
             } else {
-                frame.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+                player.unMute();
+                player.playVideo();
                 icon.innerText = "play_arrow";
-                overlay.style.opacity = "1";
-                overlay.style.background = "rgba(0,0,0,0.2)";
-                playing = false;
+                isVideoPlaying = true;
             }
+            // Icon animation
+            icon.classList.add('show-icon');
+            setTimeout(() => icon.classList.remove('show-icon'), 800);
         }
+
+        // Fetch Suggestions and Details
+        async function loadContent() {
+            document.getElementById('v-title').innerText = decodeURIComponent(urlParams.get('t'));
+            document.getElementById('c-name').innerText = decodeURIComponent(urlParams.get('c'));
+            document.getElementById('c-img').src = `https://i.pravatar.cc/100?u=${urlParams.get('c')}`;
+
+            const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://www.youtube.com/feeds/videos.xml?channel_id=UCq-Fj5jknLsUf-MWSy4_brA`);
+            const data = await res.json();
+            let listHtml = "";
+            data.items.forEach(item => {
+                const id = item.link.split('v=')[1];
+                listHtml += `
+                <a href="player.html?v=${id}&t=${encodeURIComponent(item.title)}&c=${encodeURIComponent(item.author)}" class="list-item">
+                    <div class="thumb-box">
+                        <img src="https://img.youtube.com/vi/${id}/mqdefault.jpg">
+                        <span class="duration-tag">12:40</span>
+                    </div>
+                    <div>
+                        <p style="font-size:14px; margin:0; line-height:1.3; font-weight:500;">${item.title.substring(0,50)}...</p>
+                        <p style="font-size:12px; color:#aaa; margin-top:5px;">${item.author}</p>
+                    </div>
+                </a>`;
+            });
+            document.getElementById('suggestions-container').innerHTML = listHtml;
+        }
+        loadContent();
     </script>
 </body>
 </html>
