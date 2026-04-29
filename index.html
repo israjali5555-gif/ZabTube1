@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <title>YouTube Pro Max - 15,000+ Videos</title>
+    <title>ZabPlay - 15,000+ Videos</title>
     
     <script>
         if (localStorage.getItem('isLoggedIn') !== 'true') {
@@ -13,8 +13,8 @@
     </script>
 
     <style>
+        /* === PURANA CSS WAISA HI HAI === */
         body { background:#0F0F0F; margin:0; font-family: Roboto, Arial, sans-serif; color: white; overflow-x: hidden; }
-        .header { position: sticky; top: 0; background: #0F0F0F; z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; }
         .video-card { width: 100%; margin-bottom: 12px; border-bottom: 1px solid #222; animation: fadeIn 0.5s ease-in; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .thumbnail-container { position: relative; width: 100%; aspect-ratio: 16/9; background: #222; }
@@ -30,13 +30,67 @@
         .nav-item i { font-size: 24px; margin-bottom: 2px; }
         .upload-btn-main { font-size: 42px !important; margin-top: -10px; color: #fff; }
         .loading-shimmer { padding: 30px; text-align: center; color: #aaa; font-size: 14px; font-weight: bold; }
+
+        /* === NAYA CODE: HEADER LOGO CENTER KARNE KE LIYE === */
+        .header { 
+            position: sticky; 
+            top: 0; 
+            background: #0F0F0F; 
+            z-index: 100; 
+            display: flex; 
+            align-items: center; 
+            padding: 10px 15px; 
+            height: 50px;
+        }
+        .header .logo {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+        }
+        .header-icons {
+            margin-left: auto; /* Icons ko right mein dhaklega */
+            display: flex;
+            gap: 18px;
+            align-items: center;
+        }
+
+        /* === NAYA CODE: SPLASH SCREEN CSS === */
+        #zabplay-splash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0F0F0F; /* Background black rakha hai taaki red logo chamke */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .splash-logo {
+            width: 150px; /* Splash pe bada logo */
+            animation: zoomIn 1s ease-out;
+        }
+        @keyframes zoomIn {
+            from { transform: scale(0.5); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
     </style>
 </head>
 <body>
 
+    <div id="zabplay-splash">
+        <img src="https://i.ibb.co/v4m3S3L/red-logo.png" class="splash-logo" alt="ZabPlay">
+    </div>
+
     <header class="header">
-        <div class="logo"><img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg" width="90"></div>
-        <div class="header-icons" style="display: flex; gap: 18px;">
+        <div class="logo">
+            <img src="https://i.ibb.co/v4m3S3L/red-logo.png" width="35" height="35">
+        </div>
+        
+        <div class="header-icons">
             <i class="material-icons">cast</i>
             <i class="material-icons">notifications_none</i>
             <i class="material-icons">search</i>
@@ -56,11 +110,21 @@
     </nav>
 
     <script>
+        /* === NAYA ADDITION: SPLASH HIDE LOGIC === */
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                const splash = document.getElementById('zabplay-splash');
+                splash.style.transition = 'opacity 0.5s ease';
+                splash.style.opacity = '0';
+                setTimeout(() => splash.remove(), 500);
+            }, 2500); // 2.5 second baad gayab hoga
+        });
+
+        /* === BAAKI AAPKA PURANA SCRIPT WAISA HI HAI === */
         const videoFeed = document.getElementById('main-video-feed');
         let isLoading = false;
         const displayedVideos = new Set();
         
-        // --- 60+ MEGA CHANNELS LIST (Bollywood, Pakistani, Punjabi, South) ---
         const megaChannels = [
             'UCq-Fj5jknLsUf-MWSy4_brA', 'UCffXmS6lX_3-96mE9pYv6nw', 'UCttspZesZIDEwwpVIgoZtWQ', 
             'UC55IWq7n_6oK6-63_XU3T2w', 'UCi2E6n_S8uH566X4G698F_A', 'UCX6OQ3DkcsbYNE6H8uQQuVA',
@@ -71,35 +135,27 @@
             'UC-K_S_W2_mX6E_R-zXU_K6A', 'UCF_fDSgPsS7C_S6DAt_oOzA', 'UC-lHJZR3Gqxm24_Vd_AJ5Yw',
             'UC7eHUXK_jS7Z-Fui_X7pA-w', 'UC-0p_YvYfE5mS9_rM_fGq6w', 'UCq9LpM_x_bB20-O96h-fX7A',
             'UC3SshVq_E6eXpA_m4_X3C6Q', 'UCU0D87mZ0A1K2uO0C6K9NlA', 'UCCu_996_rF4Fv8C6X4L_O_A'
-            // Aap is list mein aur bhi IDs comma dekar add kar sakte hain
         ];
 
         async function loadUnlimitedFeed() {
             if (isLoading) return;
             isLoading = true;
-
-            // Ek baar mein 20 alag-alag channels se data nikalenge (20 x 15 = 300 videos ek baar mein!)
             const batch = megaChannels.sort(() => 0.5 - Math.random()).slice(0, 20);
-            
             const fetchPromises = batch.map(id => 
                 fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://www.youtube.com/feeds/videos.xml?channel_id=${id}&nocache=${Math.random()}`)
                 .then(res => res.json())
                 .catch(() => ({items: []}))
             );
-
             const allResults = await Promise.all(fetchPromises);
-
             allResults.forEach(data => {
                 if (data.items) {
                     data.items.forEach(video => {
                         const vId = video.link.split('v=')[1];
                         if (!displayedVideos.has(vId)) {
                             displayedVideos.add(vId);
-
                             const isM = video.title.toLowerCase().match(/(movie|film|full|drama|episode)/);
                             const dur = isM ? Math.floor(Math.random() * 60 + 120) + ":" + Math.floor(Math.random() * 59).toString().padStart(2, '0') : Math.floor(Math.random() * 8 + 3) + ":" + Math.floor(Math.random() * 59).toString().padStart(2, '0');
                             const views = (Math.random() * 90 + 1).toFixed(1) + "M";
-
                             const card = document.createElement('div');
                             card.className = 'video-card';
                             card.innerHTML = `
@@ -124,22 +180,21 @@
             isLoading = false;
         }
 
-        // Scroll Logic - Ab ye trigger 2000px pe hoga taaki khatam hone se pehle naya aa jaye
         window.onscroll = () => {
             if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 2000) {
                 loadUnlimitedFeed();
             }
         };
 
-        // Heavy Initialization - Page load hote hi 3 baar load karega
         window.onload = async () => {
-            await loadUnlimitedFeed(); // Batch 1 (~200 videos)
-            await loadUnlimitedFeed(); // Batch 2 (~400 videos)
-            await loadUnlimitedFeed(); // Batch 3 (~600 videos)
+            await loadUnlimitedFeed(); 
+            await loadUnlimitedFeed(); 
+            await loadUnlimitedFeed(); 
         };
 
         function logout() { localStorage.removeItem('isLoggedIn'); window.location.href = 'login.html'; }
-        function checkUploadPermission() { /* Aapka upload logic */ }
+        function checkUploadPermission() { }
     </script>
 </body>
 </html>
+
