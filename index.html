@@ -6,66 +6,80 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <title>YouTube Home</title>
+    <style>
+        body { background:#0F0F0F; margin:0; font-family: Roboto, Arial, sans-serif; }
+        .video-card { width: 100%; margin-bottom: 8px; border-bottom: 1px solid #222; }
+        .thumbnail-container { position: relative; width: 100%; aspect-ratio: 16/9; }
+        .thumbnail-container img { width: 100%; height: 100%; display: block; object-fit: cover; }
+        .duration-badge { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.8); color: white; padding: 3px 6px; font-size: 12px; border-radius: 4px; font-weight: 500; }
+        .video-info { display: flex; padding: 12px; gap: 12px; }
+        .channel-icon { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        .video-text h3 { font-size: 15px; color: white; margin: 0; line-height: 1.4; font-weight: 500; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .video-text p { font-size: 12px; color: #aaa; margin: 5px 0 0 0; }
+        a { text-decoration: none; }
+    </style>
 </head>
-<body style="background:#0F0F0F; margin:0;">
-    <header class="header">
+<body>
+
+    <header class="header" style="position: sticky; top: 0; background: #0F0F0F; z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: 10px 15px;">
         <div class="logo"><img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg" width="90"></div>
-        <div class="header-icons">
+        <div class="header-icons" style="display: flex; gap: 15px; color: white;">
             <span class="material-icons-outlined">cast</span>
             <span class="material-icons-outlined">notifications</span>
             <span class="material-icons-outlined">search</span>
-            <div class="user-profile-circle">R</div>
+            <div style="width: 28px; height: 28px; border-radius: 50%; background: #3ea6ff; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold;">R</div>
         </div>
     </header>
 
-    <main class="feed" id="video-feed" style="padding-bottom: 80px;"></main>
+    <main class="feed" id="main-video-feed" style="padding-bottom: 70px;"></main>
 
     <nav class="bottom-nav">
         <a href="index.html" class="nav-item active"><span class="material-icons-outlined">home</span><br>Home</a>
         <a href="shorts.html" class="nav-item"><span class="material-icons-outlined">explore</span><br>Shorts</a>
-        <a href="#" class="nav-item icon-btn"><span class="material-icons-outlined" style="font-size:35px;">add_circle_outline</span></a>
+        <a href="#" class="nav-item icon-btn"><span class="material-icons-outlined" style="font-size:38px;">add_circle_outline</span></a>
         <a href="subscriptions.html" class="nav-item"><span class="material-icons-outlined">subscriptions</span><br>Subs</a>
         <a href="profile.html" class="nav-item"><span class="material-icons-outlined">account_circle</span><br>You</a>
     </nav>
 
     <script>
-        const feed = document.getElementById('video-feed');
-        const channels = ['UCq-Fj5jknLsUf-MWSy4_brA', 'UC_aEa8K-EOJ3D6gOs7HcyNg', 'UCeVMnSShP_I8uyEQbbQjwGg'];
+        const videoFeed = document.getElementById('main-video-feed');
+        // Trending channel IDs (Aap inhein badal sakte hain)
+        const channelIds = ['UCq-Fj5jknLsUf-MWSy4_brA', 'UC_aEa8K-EOJ3D6gOs7HcyNg', 'UCeVMnSShP_I8uyEQbbQjwGg'];
 
-        async function fetchVideos() {
-            for (let id of channels) {
+        async function fetchTrendingVideos() {
+            for (let id of channelIds) {
                 try {
-                    const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://www.youtube.com/feeds/videos.xml?channel_id=${id}`);
-                    const data = await res.json();
-                    data.items.forEach(v => {
-                        const vId = v.link.split('v=')[1];
-                        
-                        // REAL TIME CALCULATION (Random but Realistic)
-                        const mins = Math.floor(Math.random() * 12) + 3;
+                    const response = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://www.youtube.com/feeds/videos.xml?channel_id=${id}`);
+                    const data = await response.json();
+                    
+                    data.items.forEach(video => {
+                        const videoId = video.link.split('v=')[1];
+                        // Har video ka alag aur real dikhne wala duration (e.g. 12:45)
+                        const mins = Math.floor(Math.random() * 10) + 2;
                         const secs = Math.floor(Math.random() * 59).toString().padStart(2, '0');
-                        const duration = `${mins}:${secs}`;
-                        
-                        feed.innerHTML += `
-                        <div class="video-card" style="width:100%; margin-bottom:10px;">
-                            <a href="player.html?v=${vId}&t=${encodeURIComponent(v.title)}&c=${encodeURIComponent(v.author)}" style="text-decoration:none; color:white;">
-                                <div style="position:relative;">
-                                    <img src="https://img.youtube.com/vi/${vId}/maxresdefault.jpg" style="width:100%; display:block;">
-                                    <span style="position:absolute; bottom:8px; right:8px; background:rgba(0,0,0,0.8); padding:2px 5px; border-radius:4px; font-size:12px; font-weight:bold;">${duration}</span>
+                        const realDuration = `${mins}:${secs}`;
+
+                        videoFeed.innerHTML += `
+                        <div class="video-card">
+                            <a href="player.html?v=${videoId}&t=${encodeURIComponent(video.title)}&c=${encodeURIComponent(video.author)}">
+                                <div class="thumbnail-container">
+                                    <img src="https://img.youtube.com/vi/${videoId}/maxresdefault.jpg">
+                                    <span class="duration-badge">${realDuration}</span>
                                 </div>
-                                <div style="display:flex; padding:12px; gap:12px;">
-                                    <img src="https://i.pravatar.cc/100?u=${v.author}" style="width:38px; height:38px; border-radius:50%;">
-                                    <div style="flex:1;">
-                                        <h3 style="font-size:15px; margin:0; line-height:1.4; font-weight:500;">${v.title}</h3>
-                                        <p style="font-size:12px; color:#aaa; margin:4px 0;">${v.author} • 1.5M views • 2 hours ago</p>
+                                <div class="video-info">
+                                    <img src="https://i.pravatar.cc/100?u=${video.author}" class="channel-icon">
+                                    <div class="video-text">
+                                        <h3>${video.title}</h3>
+                                        <p>${video.author} • 1.5M views • 2 hours ago</p>
                                     </div>
                                 </div>
                             </a>
                         </div>`;
                     });
-                } catch (e) { console.log(e); }
+                } catch (error) { console.error("Error fetching videos:", error); }
             }
         }
-        window.onload = fetchVideos;
+        window.onload = fetchTrendingVideos;
     </script>
 </body>
 </html>
