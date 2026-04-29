@@ -66,53 +66,53 @@
     <script>
         const videoFeed = document.getElementById('main-video-feed');
         let isLoading = false;
-        // Yeh "Memory" hai jo repeat videos ko rokegi
-        const alreadyShown = new Set(); 
+        // Duplicate check ke liye Set
+        const displayedVideos = new Set();
         
-        // --- MASSIVE LIST: 25+ Famous Indian & Pakistani Channels ---
+        // --- Sabhi Famous Indian aur Pakistani Channels ki Badi List ---
         const channelIds = [
-            'UCq-Fj5jknLsUf-MWSy4_brA', 'UC_aEa8K-EOJ3D6gOs7HcyNg', 'UCeVMnSShP_I8uyEQbbQjwGg', // T-Series, SET India, Zee Music
+            'UCq-Fj5jknLsUf-MWSy4_brA', 'UCffXmS6lX_3-96mE9pYv6nw', 'UCttspZesZIDEwwpVIgoZtWQ', // T-Series, Zee Music, Sony Music
             'UC55IWq7n_6oK6-63_XU3T2w', 'UCi2E6n_S8uH566X4G698F_A', 'UC-lHJZR3Gqxm24_Vd_AJ5Yw', // Goldmines, Sony PAL, PewDiePie
-            'UC07-dOwgza1IguKA86jqx9w', 'UCttspZesZIDEwwpVIgoZtWQ', 'UC6-F5tGu299p-ctm8vFkR6A', // Zee TV, Sony Music India, Sab TV
             'UCX6OQ3DkcsbYNE6H8uQQuVA', 'UC2to_M9Wf5m6f5Uf_o6uFcA', 'UCynM4_V99A7l9Zp3_f_S2rQ', // Yash Raj, Shemaroo, Venus
             'UC689oVpZOn_N_n_u08v-qkg', 'UCk8GzjMOrvo8Ky_meK76w6A', 'UC3SshVq_E6eXpA_m4_X3C6Q', // Hum TV, Har Pal Geo, Coke Studio
-            'UC0T_p-Z9_vLzX7l-L8G_j7A', 'UCv2-u_8K-R_O-q6S-P_I8uy', 'UC89V_8N_f0f_fG_6_v8fS6A', // Sufi Score, Pakistani Classics
-            'UCF_fDSgPsS7C_S6DAt_oOzA', 'UCm7E7GZz_fB0sZzVbV_yYog', 'UCpEhnqL0y41EpW2TvWAHD7Q'  // Star Plus, Colors, etc.
+            'UC_aEa8K-EOJ3D6gOs7HcyNg', 'UCpEhnqL0y41EpW2TvWAHD7Q', 'UCm7E7GZz_fB0sZzVbV_yYog', // SET India, Sony, Colors
+            'UC07-dOwgza1IguKA86jqx9w', 'UCv2-u_8K-R_O-q6S-P_I8uy', 'UC0T_p-Z9_vLzX7l-L8G_j7A', // Zee TV, Pakistani Classics, Sufi Score
+            'UC89V_8N_f0f_fG_6_v8fS6A', 'UC-K_S_W2_mX6E_R-zXU_K6A', 'UCF_fDSgPsS7C_S6DAt_oOzA'  // Tips, Eros, Star Plus
         ];
 
         async function fetchVideos() {
             if (isLoading) return;
             isLoading = true;
             
-            // Har baar random 8 channels ka batch load karega taaki mix maal mile
+            // Har baar 10 random channels uthayenge list se
             const shuffled = channelIds.sort(() => 0.5 - Math.random());
-            const selected = shuffled.slice(0, 8);
+            const selected = shuffled.slice(0, 10);
 
             for (let id of selected) {
                 try {
-                    // Cache breaker (?t=) jisse purana data repeat na ho
-                    const response = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://www.youtube.com/feeds/videos.xml?channel_id=${id}&t=${new Date().getTime()}`);
+                    // Cache breaker taaki hamesha naya data mile
+                    const response = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://www.youtube.com/feeds/videos.xml?channel_id=${id}&nocache=${new Date().getTime()}`);
                     const data = await response.json();
                     
                     if (data.items) {
                         data.items.forEach(video => {
                             const videoId = video.link.split('v=')[1];
 
-                            // CHECK: Agar video pehle se hai toh skip karo (Anti-Repeat)
-                            if (!alreadyShown.has(videoId)) {
-                                alreadyShown.add(videoId);
+                            // Duplicate Video Check: Agar video pehle se hai toh dobara nahi dikhayega
+                            if (!displayedVideos.has(videoId)) {
+                                displayedVideos.add(videoId);
 
-                                const isMovie = video.title.toLowerCase().match(/(movie|film|full|drama)/);
-                                const mins = isMovie ? Math.floor(Math.random() * 60) + 110 : Math.floor(Math.random() * 10) + 3;
+                                const isMovie = video.title.toLowerCase().match(/(movie|film|full movie|drama)/);
+                                const mins = isMovie ? Math.floor(Math.random() * 60) + 120 : Math.floor(Math.random() * 10) + 3;
                                 const secs = Math.floor(Math.random() * 59).toString().padStart(2, '0');
-                                const views = (Math.random() * 90 + 1).toFixed(1) + "M";
+                                const views = (Math.random() * 50 + 1).toFixed(1) + "M";
 
                                 const card = document.createElement('div');
                                 card.className = 'video-card';
                                 card.innerHTML = `
                                     <a href="player.html?v=${videoId}&t=${encodeURIComponent(video.title)}&c=${encodeURIComponent(video.author)}">
                                         <div class="thumbnail-container">
-                                            <img src="https://img.youtube.com/vi/${videoId}/mqdefault.jpg" onerror="this.src='https://img.youtube.com/vi/${videoId}/maxresdefault.jpg'">
+                                            <img src="https://img.youtube.com/vi/${videoId}/maxresdefault.jpg" onerror="this.src='https://img.youtube.com/vi/${videoId}/mqdefault.jpg'">
                                             <span class="duration-badge">${mins}:${secs}</span>
                                         </div>
                                         <div class="video-info">
@@ -127,14 +127,14 @@
                             }
                         });
                     }
-                } catch (e) { console.error("Skipping slow channel..."); }
+                } catch (e) { console.log("Skipping failed channel..."); }
             }
             isLoading = false;
         }
 
-        // Infinite Scroll Logic
+        // Infinite Scroll: Screen ke end tak pahunchne par aur load karega
         window.onscroll = function() {
-            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 1000) {
+            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 1200) {
                 fetchVideos();
             }
         };
@@ -143,16 +143,18 @@
             if(localStorage.getItem('isLoggedIn') === 'true') {
                 let input = document.createElement('input');
                 input.type = 'file'; input.accept = 'video/*';
-                input.onchange = _ => { alert("Uploading: " + input.files[0].name + "\nConnecting to Main Server..."); };
+                input.onchange = _ => { alert("Uploading Movie: " + input.files[0].name + "\nConnecting to Secure Server..."); };
                 input.click();
             } else { window.location.href = 'login.html'; }
         }
 
         function logout() { localStorage.removeItem('isLoggedIn'); window.location.href = 'login.html'; }
 
+        // Initial loading taaki page khulte hi dher saari videos hon
         window.onload = async () => {
             await fetchVideos();
-            await fetchVideos(); // Do baar shuru mein load taaki feed bhara dikhe
+            await fetchVideos();
+            await fetchVideos();
         };
     </script>
 </body>
