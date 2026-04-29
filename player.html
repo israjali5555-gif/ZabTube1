@@ -12,11 +12,12 @@
         .video-container { position: relative; width: 96%; margin: 8px auto; aspect-ratio: 16/9; border-radius: 12px; overflow: hidden; background: #000; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
         iframe { width: 100%; height: 100%; border: none; pointer-events: none; }
 
-        /* 2. YouTube Style Center Controls (FIXED) */
+        /* 2. YouTube Style Center Controls (FIXED for Ads) */
         .ui-overlay { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
             z-index: 10; display: flex; align-items: center; justify-content: space-evenly;
-            background: rgba(0,0,0,0.4); opacity: 0; transition: opacity 0.3s; pointer-events: none;
+            background: rgba(0,0,0,0.4); opacity: 0; transition: opacity 0.3s;
+            pointer-events: none; /* Default none for Ad clicking */
         }
         .ui-overlay.active { opacity: 1; pointer-events: auto; }
         
@@ -25,6 +26,11 @@
             border-radius: 50%; padding: 12px; cursor: pointer; user-select: none;
         }
         .play-pause-btn { font-size: 50px; }
+
+        /* Quality & Fullscreen Icons */
+        .top-right { position: absolute; top: 10px; right: 10px; display: flex; gap: 15px; }
+        .bottom-right { position: absolute; bottom: 10px; right: 10px; }
+        .small-btn { font-size: 22px; color: white; cursor: pointer; opacity: 0.8; }
 
         /* 3. Red Seekbar */
         .seekbar-box { position: absolute; bottom: 0; width: 100%; height: 3px; background: rgba(255,255,255,0.2); z-index: 20; }
@@ -54,13 +60,23 @@
 </head>
 <body onclick="showControls()">
 
-    <div class="video-container">
+    <div class="video-container" id="vid-cont">
         <div id="player"></div>
+        
         <div class="ui-overlay" id="ctrl-layer">
+            <div class="top-right">
+                <span class="material-icons small-btn" onclick="openQuality()">settings</span>
+            </div>
+
             <span class="material-icons ctrl-btn" onclick="skipSec(-10)">skip_previous</span>
             <span class="material-icons ctrl-btn play-pause-btn" id="ui-btn" onclick="togglePlay()">pause</span>
             <span class="material-icons ctrl-btn" onclick="skipSec(10)">skip_next</span>
+
+            <div class="bottom-right">
+                <span class="material-icons small-btn" onclick="toggleFull()">fullscreen</span>
+            </div>
         </div>
+
         <div class="seekbar-box" onclick="manualSeek(event); event.stopPropagation();">
             <div class="seekbar-red" id="progress-bar"></div>
         </div>
@@ -102,7 +118,13 @@
         function onYouTubeIframeAPIReady() {
             player = new YT.Player('player', {
                 videoId: urlParams.get('v'),
-                playerVars: { 'autoplay': 1, 'controls': 0, 'modestbranding': 1, 'rel': 0 },
+                playerVars: { 
+                    'autoplay': 1, 
+                    'controls': 0, 
+                    'modestbranding': 1, 
+                    'rel': 0,
+                    'iv_load_policy': 3 
+                },
                 events: { 'onReady': onPlayerReady }
             });
         }
@@ -116,10 +138,9 @@
             isPlaying = true;
             setInterval(updateSeek, 1000);
             loadPageData();
-            showControls(); // Start with controls shown
+            showControls();
         }
 
-        // Show/Hide Controls Logic
         function showControls() {
             const layer = document.getElementById('ctrl-layer');
             layer.classList.add('active');
@@ -147,6 +168,25 @@
             event.stopPropagation();
         }
 
+        function toggleFull() {
+            const container = document.getElementById('vid-cont');
+            if (!document.fullscreenElement) {
+                container.requestFullscreen().catch(err => {
+                    alert(`Error: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+            event.stopPropagation();
+        }
+
+        function openQuality() {
+            // Quality set to highest available (4K/HD)
+            player.setPlaybackQuality('hd2160');
+            alert("Setting High Quality (4K)...");
+            event.stopPropagation();
+        }
+
         function updateSeek() {
             if(player && player.getCurrentTime) {
                 let p = (player.getCurrentTime() / player.getDuration()) * 100;
@@ -155,32 +195,36 @@
         }
 
         function manualSeek(e) {
-            let rect = e.target.getBoundingClientRect();
+            let rect = e.currentTarget.getBoundingClientRect();
             let pos = (e.clientX - rect.left) / rect.width;
             player.seekTo(pos * player.getDuration());
         }
 
         async function loadPageData() {
-            document.getElementById('v-title').innerText = decodeURIComponent(urlParams.get('t'));
-            document.getElementById('c-name').innerText = decodeURIComponent(urlParams.get('c'));
+            document.getElementById('v-title').innerText = decodeURIComponent(urlParams.get('t') || "Video Title");
+            document.getElementById('c-name').innerText = decodeURIComponent(urlParams.get('c') || "Channel Name");
             document.getElementById('c-img').src = `https://ui-avatars.com/api/?name=${urlParams.get('c')}&background=random`;
 
+            // Suggestion logic (Fetching some videos)
             const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://www.youtube.com/feeds/videos.xml?channel_id=UCq-Fj5jknLsUf-MWSy4_brA`);
             const data = await res.json();
             let html = "";
-            data.items.forEach(v => {
-                const id = v.link.split('v=')[1];
-                html += `
-                <a class="suggestion-card" href="player.html?v=${id}&t=${encodeURIComponent(v.title)}&c=${encodeURIComponent(v.author)}">
-                    <img src="https://img.youtube.com/vi/${id}/mqdefault.jpg">
-                    <div>
-                        <div style="font-size:14px; font-weight:500; line-height:1.2;">${v.title.substring(0,50)}...</div>
-                        <div style="font-size:12px; color:#aaa; margin-top:5px;">${v.author}</div>
-                    </div>
-                </a>`;
-            });
+            if(data.items) {
+                data.items.forEach(v => {
+                    const id = v.link.split('v=')[1];
+                    html += `
+                    <a class="suggestion-card" href="player.html?v=${id}&t=${encodeURIComponent(v.title)}&c=${encodeURIComponent(v.author)}">
+                        <img src="https://img.youtube.com/vi/${id}/mqdefault.jpg">
+                        <div>
+                            <div style="font-size:14px; font-weight:500; line-height:1.2;">${v.title.substring(0,50)}...</div>
+                            <div style="font-size:12px; color:#aaa; margin-top:5px;">${v.author}</div>
+                        </div>
+                    </a>`;
+                });
+            }
             document.getElementById('suggestions').innerHTML = html;
         }
     </script>
 </body>
 </html>
+
