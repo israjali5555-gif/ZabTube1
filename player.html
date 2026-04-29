@@ -4,172 +4,113 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
-    <title>My App Player</title>
+    <title>Pro Player</title>
     <style>
-        body { background:#000; color:white; margin:0; font-family: sans-serif; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
+        body { background:#000; color:white; margin:0; font-family: sans-serif; overflow-x: hidden; }
+        .vid-frame { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; overflow: hidden; }
         
-        /* Video Container with Zoom to Hide YouTube Logo */
-        .app-video-frame { 
-            position: relative; width: 100%; aspect-ratio: 16/9; background: #000; overflow: hidden; 
-        }
-        iframe { 
-            position: absolute; top: -12%; left: -1%; width: 102%; height: 124%; 
-            border: none; pointer-events: none; 
-        }
+        /* YouTube Logo Hide Hack */
+        iframe { position: absolute; top: -12%; left: -1%; width: 102%; height: 124%; border: none; pointer-events: none; }
 
-        /* Pure Control Layer */
-        .app-overlay { 
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            z-index: 100; display: flex; flex-direction: column; justify-content: space-between;
-        }
-
-        /* Top Bar: Icons like HD, Fullscreen */
-        .top-nav { display: flex; justify-content: flex-end; padding: 10px; gap: 15px; background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent); }
-        .top-nav span { font-size: 24px; cursor: pointer; }
-
-        /* Middle Zone: ONLY for Play/Pause */
-        .play-pause-zone { flex: 1; display: flex; align-items: center; justify-content: center; }
-        .center-icon { font-size: 60px; background: rgba(0,0,0,0.5); border-radius: 50%; padding: 10px; display: none; }
-
-        /* Custom Seekbar (Red Line) */
-        .seekbar-area { padding: 0 0 10px 0; background: linear-gradient(to top, rgba(0,0,0,0.6), transparent); }
-        .bar-bg { width: 100%; height: 4px; background: rgba(255,255,255,0.3); position: relative; }
-        .bar-fill { height: 100%; background: #ff0000; width: 0%; position: relative; }
-        .bar-fill::after { content: ''; position: absolute; right: -5px; top: -4px; width: 12px; height: 12px; background: #ff0000; border-radius: 50%; }
-
-        /* Description Section */
-        .content-box { background: #0F0F0F; padding: 15px; border-radius: 15px 15px 0 0; margin-top: -10px; position: relative; z-index: 110; }
-        .yt-button { background: #272727; border: none; color: white; padding: 8px 16px; border-radius: 20px; font-size: 13px; display: flex; align-items: center; }
+        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; display: flex; flex-direction: column; justify-content: space-between; }
+        .center-play { flex: 1; display: flex; align-items: center; justify-content: center; }
+        .main-icon { font-size: 50px; background: rgba(0,0,0,0.6); border-radius: 50%; padding: 10px; opacity: 0; }
+        
+        /* Seekbar */
+        .seekbar { width: 100%; height: 4px; background: rgba(255,255,255,0.3); position: relative; cursor: pointer; }
+        .seekbar-fill { height: 100%; background: #f00; width: 0%; pointer-events: none; }
+        
+        /* Top bar icons */
+        .top-btns { display: flex; justify-content: flex-end; padding: 10px; gap: 15px; background: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent); }
+        .top-btns span { font-size: 22px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <div class="app-video-frame">
-        <div id="main-player"></div>
-        
-        <div class="app-overlay">
-            <div class="top-nav" onclick="event.stopPropagation()">
-                <span class="material-icons-outlined" onclick="alert('Quality Set to Auto (HD)')">hd</span>
-                <span class="material-icons-outlined" onclick="toggleFull()">fullscreen</span>
+    <div class="vid-frame">
+        <div id="yt-player"></div>
+        <div class="overlay" id="full-overlay">
+            <div class="top-btns" onclick="event.stopPropagation()">
+                <span class="material-icons-outlined">hd</span>
+                <span class="material-icons-outlined" onclick="location.reload()">refresh</span>
+                <span class="material-icons-outlined">fullscreen</span>
             </div>
 
-            <div class="play-pause-zone" onclick="toggleState()">
-                <span class="material-icons-outlined center-icon" id="main-ui-icon">play_arrow</span>
+            <div class="center-play" id="tap-zone">
+                <span class="material-icons-outlined main-icon" id="play-ui">play_arrow</span>
             </div>
 
-            <div class="seekbar-area" onclick="event.stopPropagation()">
-                <div class="bar-bg" onclick="seekVid(event)">
-                    <div class="bar-fill" id="fill-line"></div>
-                </div>
-                <div style="display:flex; justify-content:space-between; padding:5px 10px; font-size:11px; color:#ccc;">
-                    <span id="time-txt">0:00 / 0:00</span>
-                    <span class="material-icons-outlined" style="font-size:16px;">closed_caption</span>
-                </div>
+            <div class="seekbar" onclick="seek(event); event.stopPropagation();">
+                <div class="seekbar-fill" id="fill"></div>
             </div>
         </div>
     </div>
 
-    <div class="content-box">
-        <h2 id="video-title" style="font-size:18px; margin:0 0 10px 0; font-weight:500;">Title Loading...</h2>
-        <div style="display:flex; gap:8px; margin-bottom:15px; overflow-x:auto;">
-            <button class="yt-button"><span class="material-icons-outlined">thumb_up</span>&nbsp; 25K</button>
-            <button class="yt-button"><span class="material-icons-outlined">share</span>&nbsp; Share</button>
-            <button class="yt-button"><span class="material-icons-outlined">download</span>&nbsp; Save</button>
-        </div>
-        <div style="display:flex; align-items:center; gap:12px;">
-            <img id="chan-avatar" src="" style="width:35px; height:35px; border-radius:50%;">
-            <p id="chan-label" style="flex:1; font-weight:bold; margin:0; font-size:14px;"></p>
-            <button style="background:white; color:black; border:none; padding:8px 18px; border-radius:20px; font-weight:bold; font-size:13px;">Subscribe</button>
-        </div>
-        
-        <div id="rec-list" style="margin-top:25px; border-top:1px solid #333; padding-top:20px;"></div>
+    <div style="padding:15px; background:#0F0F0F;">
+        <h3 id="v-t" style="margin:0; font-size:16px;">Loading...</h3>
+        <p id="c-n" style="color:#aaa; font-size:13px; margin:5px 0;"></p>
+        <div id="list" style="margin-top:20px;"></div>
     </div>
 
     <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const videoId = urlParams.get('v');
-        let player, isPlaying = false;
+        const p = new URLSearchParams(window.location.search);
+        let player, playing = false;
 
         var tag = document.createElement('script');
         tag.src = "https://www.youtube.com/iframe_api";
         document.head.appendChild(tag);
 
         function onYouTubeIframeAPIReady() {
-            player = new YT.Player('main-player', {
-                videoId: videoId,
+            player = new YT.Player('yt-player', {
+                videoId: p.get('v'),
                 playerVars: { 'autoplay': 1, 'controls': 0, 'modestbranding': 1, 'rel': 0, 'iv_load_policy': 3 },
-                events: { 'onReady': onReady }
+                events: { 'onReady': (e) => {
+                    e.target.playVideo();
+                    // THE HACK: Hum har 100ms mein awaaz kholne ki koshish karenge
+                    let autoUnmute = setInterval(() => {
+                        if(player.getPlayerState() === 1) {
+                            player.unMute(); 
+                            if(!player.isMuted()) clearInterval(autoUnmute);
+                        }
+                    }, 100);
+                    playing = true;
+                    setInterval(update, 1000);
+                }}
             });
         }
 
-        function onReady(event) {
-            event.target.mute(); // Mobile App Autoplay Fix
-            event.target.playVideo();
-            isPlaying = true;
-            setInterval(syncUI, 1000);
-            loadAppData();
-        }
-
-        function toggleState() {
-            const icon = document.getElementById('main-ui-icon');
-            if (isPlaying) {
+        // Tap Zone Logic
+        document.getElementById('tap-zone').onclick = function(e) {
+            const icon = document.getElementById('play-ui');
+            if (playing) {
                 player.pauseVideo();
                 icon.innerText = "play_arrow";
-                icon.style.display = "block";
-                isPlaying = false;
+                icon.style.opacity = "1";
+                playing = false;
             } else {
-                player.unMute(); // First touch starts sound in App
+                player.unMute();
                 player.playVideo();
                 icon.innerText = "pause";
-                icon.style.display = "block";
-                setTimeout(() => { icon.style.display = "none"; }, 800);
-                isPlaying = true;
+                icon.style.opacity = "1";
+                setTimeout(() => { icon.style.opacity = "0"; }, 700);
+                playing = true;
+            }
+        };
+
+        function update() {
+            if(player && player.getCurrentTime) {
+                document.getElementById('fill').style.width = (player.getCurrentTime()/player.getDuration()*100) + "%";
             }
         }
 
-        function syncUI() {
-            if (player && player.getCurrentTime) {
-                const cur = player.getCurrentTime();
-                const dur = player.getDuration();
-                document.getElementById('fill-line').style.width = (cur / dur * 100) + "%";
-                document.getElementById('time-txt').innerText = fmt(cur) + " / " + fmt(dur);
-            }
-        }
-
-        function fmt(s) {
-            let m = Math.floor(s/60); s = Math.floor(s%60);
-            return m + ":" + (s < 10 ? '0' + s : s);
-        }
-
-        function seekVid(e) {
-            const rect = e.target.getBoundingClientRect();
-            const pct = (e.clientX - rect.left) / rect.width;
+        function seek(e) {
+            const pct = (e.clientX / window.innerWidth);
             player.seekTo(player.getDuration() * pct);
         }
 
-        function toggleFull() {
-            const container = document.querySelector('.app-video-frame');
-            if (!document.fullscreenElement) container.requestFullscreen();
-            else document.exitFullscreen();
-        }
-
-        async function loadAppData() {
-            document.getElementById('video-title').innerText = decodeURIComponent(urlParams.get('t'));
-            document.getElementById('chan-label').innerText = decodeURIComponent(urlParams.get('c'));
-            document.getElementById('chan-avatar').src = `https://i.pravatar.cc/100?u=${urlParams.get('c')}`;
-
-            const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://www.youtube.com/feeds/videos.xml?channel_id=UCq-Fj5jknLsUf-MWSy4_brA`);
-            const data = await res.json();
-            let html = "<h4>Up next</h4>";
-            data.items.forEach(v => {
-                const id = v.link.split('v=')[1];
-                html += `<div onclick="location.href='player.html?v=${id}&t=${encodeURIComponent(v.title)}&c=${encodeURIComponent(v.author)}'" style="display:flex; gap:12px; margin-bottom:15px;">
-                    <img src="https://img.youtube.com/vi/${id}/mqdefault.jpg" style="width:130px; border-radius:10px;">
-                    <p style="font-size:13px; margin:0; line-height:1.3; color:#fff;">${v.title.substring(0,45)}...</p>
-                </div>`;
-            });
-            document.getElementById('rec-list').innerHTML = html;
-        }
+        // Load Data
+        document.getElementById('v-t').innerText = decodeURIComponent(p.get('t'));
+        document.getElementById('c-n').innerText = decodeURIComponent(p.get('c'));
     </script>
 </body>
 </html>
