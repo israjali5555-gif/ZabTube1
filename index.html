@@ -31,7 +31,7 @@
         .upload-btn-main { font-size: 42px !important; margin-top: -10px; color: #fff; }
         .loading-shimmer { padding: 30px; text-align: center; color: #aaa; font-size: 14px; font-weight: bold; }
 
-        /* === NAYA CODE: HEADER LOGO CENTER KARNE KE LIYE === */
+        /* === FIX: LOGO + NAME LEFT SIDE (YOUTUBE STYLE) === */
         .header { 
             position: sticky; 
             top: 0; 
@@ -39,38 +39,47 @@
             z-index: 100; 
             display: flex; 
             align-items: center; 
+            justify-content: space-between; /* Space logo left aur icons right */
             padding: 10px 15px; 
-            height: 50px;
+            height: 55px;
         }
-        .header .logo {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
+        .header .brand-container {
             display: flex;
             align-items: center;
+            gap: 8px; /* Logo aur naam ke beech space */
+        }
+        .header .logo-img {
+            height: 32px;
+            width: 32px;
+            object-fit: contain;
+        }
+        .header .brand-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+            letter-spacing: -0.5px;
         }
         .header-icons {
-            margin-left: auto; /* Icons ko right mein dhaklega */
             display: flex;
             gap: 18px;
             align-items: center;
         }
 
-        /* === NAYA CODE: SPLASH SCREEN CSS === */
+        /* === SPLASH SCREEN CSS === */
         #zabplay-splash {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: #0F0F0F; /* Background black rakha hai taaki red logo chamke */
+            background: #0F0F0F;
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 9999;
         }
         .splash-logo {
-            width: 150px; /* Splash pe bada logo */
+            width: 150px;
             animation: zoomIn 1s ease-out;
         }
         @keyframes zoomIn {
@@ -82,12 +91,13 @@
 <body>
 
     <div id="zabplay-splash">
-        <img src="https://i.ibb.co/v4m3S3L/red-logo.png" class="splash-logo" alt="ZabPlay">
+        <img src="16861.png" class="splash-logo" alt="ZabPlay">
     </div>
 
     <header class="header">
-        <div class="logo">
-            <img src="https://i.ibb.co/v4m3S3L/red-logo.png" width="35" height="35">
+        <div class="brand-container">
+            <img src="16861.png" class="logo-img" alt="Z">
+            <span class="brand-name">ZabPlay</span>
         </div>
         
         <div class="header-icons">
@@ -110,17 +120,19 @@
     </nav>
 
     <script>
-        /* === NAYA ADDITION: SPLASH HIDE LOGIC === */
+        /* === SPLASH HIDE LOGIC === */
         window.addEventListener('load', function() {
             setTimeout(function() {
                 const splash = document.getElementById('zabplay-splash');
-                splash.style.transition = 'opacity 0.5s ease';
-                splash.style.opacity = '0';
-                setTimeout(() => splash.remove(), 500);
-            }, 2500); // 2.5 second baad gayab hoga
+                if(splash) {
+                    splash.style.transition = 'opacity 0.5s ease';
+                    splash.style.opacity = '0';
+                    setTimeout(() => splash.remove(), 500);
+                }
+            }, 2500);
         });
 
-        /* === BAAKI AAPKA PURANA SCRIPT WAISA HI HAI === */
+        /* === VIDEO FEED LOGIC === */
         const videoFeed = document.getElementById('main-video-feed');
         let isLoading = false;
         const displayedVideos = new Set();
@@ -197,4 +209,3 @@
     </script>
 </body>
 </html>
-
