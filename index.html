@@ -13,7 +13,6 @@
     </script>
 
     <style>
-        /* === PURANA CSS WAISA HI HAI === */
         body { background:#0F0F0F; margin:0; font-family: Roboto, Arial, sans-serif; color: white; overflow-x: hidden; }
         .video-card { width: 100%; margin-bottom: 12px; border-bottom: 1px solid #222; animation: fadeIn 0.5s ease-in; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -31,7 +30,6 @@
         .upload-btn-main { font-size: 42px !important; margin-top: -10px; color: #fff; }
         .loading-shimmer { padding: 30px; text-align: center; color: #aaa; font-size: 14px; font-weight: bold; }
 
-        /* === FIX: LOGO + NAME LEFT SIDE (YOUTUBE STYLE) === */
         .header { 
             position: sticky; 
             top: 0; 
@@ -39,19 +37,20 @@
             z-index: 100; 
             display: flex; 
             align-items: center; 
-            justify-content: space-between; /* Space logo left aur icons right */
+            justify-content: space-between; 
             padding: 10px 15px; 
             height: 55px;
         }
         .header .brand-container {
             display: flex;
             align-items: center;
-            gap: 8px; /* Logo aur naam ke beech space */
+            gap: 8px; 
         }
         .header .logo-img {
             height: 32px;
             width: 32px;
             object-fit: contain;
+            border-radius: 4px;
         }
         .header .brand-name {
             font-size: 20px;
@@ -65,7 +64,6 @@
             align-items: center;
         }
 
-        /* === SPLASH SCREEN CSS === */
         #zabplay-splash {
             position: fixed;
             top: 0;
@@ -91,12 +89,18 @@
 <body>
 
     <div id="zabplay-splash">
-        <img src="16861.png" class="splash-logo" alt="ZabPlay">
+        <img src="16861.png?v=1" 
+             class="splash-logo" 
+             alt="ZabPlay" 
+             onerror="this.onerror=null; this.src='https://i.ibb.co/6P0D0rV/16861.png';">
     </div>
 
     <header class="header">
         <div class="brand-container">
-            <img src="16861.png" class="logo-img" alt="Z">
+            <img src="16861.png?v=1" 
+                 class="logo-img" 
+                 alt="Z" 
+                 onerror="this.onerror=null; this.src='https://i.ibb.co/6P0D0rV/16861.png';">
             <span class="brand-name">ZabPlay</span>
         </div>
         
@@ -120,7 +124,6 @@
     </nav>
 
     <script>
-        /* === SPLASH HIDE LOGIC === */
         window.addEventListener('load', function() {
             setTimeout(function() {
                 const splash = document.getElementById('zabplay-splash');
@@ -132,7 +135,6 @@
             }, 2500);
         });
 
-        /* === VIDEO FEED LOGIC === */
         const videoFeed = document.getElementById('main-video-feed');
         let isLoading = false;
         const displayedVideos = new Set();
@@ -140,7 +142,7 @@
         const megaChannels = [
             'UCq-Fj5jknLsUf-MWSy4_brA', 'UCffXmS6lX_3-96mE9pYv6nw', 'UCttspZesZIDEwwpVIgoZtWQ', 
             'UC55IWq7n_6oK6-63_XU3T2w', 'UCi2E6n_S8uH566X4G698F_A', 'UCX6OQ3DkcsbYNE6H8uQQuVA',
-            'UC2to_M9Wf5m6f5Uf_o6uFcA', 'UCynM4_V99A7l9Zp3_f_S2rQ', 'UC689oVpZOn_N_n_u08v-qkg',
+            'UC2to_M9Wf5m6f5Uf_o6uFcA', 'UCsynM4_V99A7l9Zp3_f_S2rQ', 'UC689oVpZOn_N_n_u08v-qkg',
             'UCk8GzjMOrvo8Ky_meK76w6A', 'UC3SshVq_E6eXpA_m4_X3C6Q', 'UC_aEa8K-EOJ3D6gOs7HcyNg',
             'UCpEhnqL0y41EpW2TvWAHD7Q', 'UCm7E7GZz_fB0sZzVbV_yYog', 'UC07-dOwgza1IguKA86jqx9w',
             'UCv2-u_8K-R_O-q6S-P_I8uy', 'UC0T_p-Z9_vLzX7l-L8G_j7A', 'UC89V_8N_f0f_fG_6_v8fS6A',
@@ -209,3 +211,4 @@
     </script>
 </body>
 </html>
+
