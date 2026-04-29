@@ -3,20 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <title>Modern YouTube Player</title>
     <style>
         body { background:#0F0F0F; color:white; margin:0; font-family: "Roboto", sans-serif; overflow-x: hidden; }
         
-        /* 1. Video Container with Rounded Corners (YouTube 2024 Style) */
+        /* 1. Video Container */
         .video-container { position: relative; width: 96%; margin: 8px auto; aspect-ratio: 16/9; border-radius: 12px; overflow: hidden; background: #000; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
         iframe { width: 100%; height: 100%; border: none; pointer-events: none; }
 
-        /* 2. Modern Play Button (Only Center) */
-        .ui-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; display: flex; align-items: center; justify-content: center; pointer-events: none; }
-        .play-pause-circle { pointer-events: auto; font-size: 45px; background: rgba(0,0,0,0.5); border-radius: 50%; padding: 12px; cursor: pointer; display: none; transition: 0.2s; }
+        /* 2. YouTube Style Center Controls (FIXED) */
+        .ui-overlay { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            z-index: 10; display: flex; align-items: center; justify-content: space-evenly;
+            background: rgba(0,0,0,0.4); opacity: 0; transition: opacity 0.3s; pointer-events: none;
+        }
+        .ui-overlay.active { opacity: 1; pointer-events: auto; }
+        
+        .ctrl-btn { 
+            font-size: 35px; color: white; background: rgba(0,0,0,0.5); 
+            border-radius: 50%; padding: 12px; cursor: pointer; user-select: none;
+        }
+        .play-pause-btn { font-size: 50px; }
 
-        /* 3. Red Seekbar Niche */
+        /* 3. Red Seekbar */
         .seekbar-box { position: absolute; bottom: 0; width: 100%; height: 3px; background: rgba(255,255,255,0.2); z-index: 20; }
         .seekbar-red { height: 100%; background: #FF0000; width: 0%; transition: width 0.1s linear; }
 
@@ -25,7 +35,7 @@
         .video-title { font-size: 19px; font-weight: bold; line-height: 1.3; margin-bottom: 8px; }
         .meta-text { font-size: 13px; color: #aaa; margin-bottom: 12px; }
 
-        /* 5. Buttons Row (Modern Chips) */
+        /* 5. Buttons Row */
         .action-row { display: flex; gap: 8px; overflow-x: auto; margin-bottom: 16px; padding-bottom: 4px; scrollbar-width: none; }
         .action-row::-webkit-scrollbar { display: none; }
         .chip { background: #272727; border: none; color: white; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 500; display: flex; align-items: center; white-space: nowrap; }
@@ -42,12 +52,14 @@
         .suggestion-card img { width: 150px; aspect-ratio: 16/9; border-radius: 8px; object-fit: cover; }
     </style>
 </head>
-<body>
+<body onclick="showControls()">
 
     <div class="video-container">
         <div id="player"></div>
-        <div class="ui-overlay" onclick="togglePlay()">
-            <span class="material-icons-outlined play-pause-circle" id="ui-btn">pause</span>
+        <div class="ui-overlay" id="ctrl-layer">
+            <span class="material-icons ctrl-btn" onclick="skipSec(-10)">skip_previous</span>
+            <span class="material-icons ctrl-btn play-pause-btn" id="ui-btn" onclick="togglePlay()">pause</span>
+            <span class="material-icons ctrl-btn" onclick="skipSec(10)">skip_next</span>
         </div>
         <div class="seekbar-box" onclick="manualSeek(event); event.stopPropagation();">
             <div class="seekbar-red" id="progress-bar"></div>
@@ -59,10 +71,10 @@
         <div class="meta-text">1.2M views • 3 days ago ...more</div>
 
         <div class="action-row">
-            <button class="chip"><i class="material-icons-outlined">thumb_up</i> 45K</button>
-            <button class="chip"><i class="material-icons-outlined">share</i> Share</button>
-            <button class="chip"><i class="material-icons-outlined">download</i> Download</button>
-            <button class="chip"><i class="material-icons-outlined">content_cut</i> Remix</button>
+            <button class="chip"><i class="material-icons">thumb_up</i> 45K</button>
+            <button class="chip"><i class="material-icons">share</i> Share</button>
+            <button class="chip"><i class="material-icons">file_download</i> Download</button>
+            <button class="chip"><i class="material-icons">content_cut</i> Remix</button>
         </div>
 
         <div class="channel-section">
@@ -80,7 +92,7 @@
 
     <script>
         const urlParams = new URLSearchParams(window.location.search);
-        let player, isPlaying = false;
+        let player, isPlaying = false, controlTimer;
 
         // YouTube API Load
         var tag = document.createElement('script');
@@ -97,7 +109,6 @@
 
         function onPlayerReady(event) {
             event.target.playVideo();
-            // Auto-Unmute logic
             let unmuteInt = setInterval(() => {
                 player.unMute();
                 if(!player.isMuted()) clearInterval(unmuteInt);
@@ -105,6 +116,17 @@
             isPlaying = true;
             setInterval(updateSeek, 1000);
             loadPageData();
+            showControls(); // Start with controls shown
+        }
+
+        // Show/Hide Controls Logic
+        function showControls() {
+            const layer = document.getElementById('ctrl-layer');
+            layer.classList.add('active');
+            clearTimeout(controlTimer);
+            controlTimer = setTimeout(() => {
+                layer.classList.remove('active');
+            }, 3000);
         }
 
         function togglePlay() {
@@ -112,14 +134,17 @@
             if (isPlaying) {
                 player.pauseVideo();
                 btn.innerText = "play_arrow";
-                btn.style.display = "block";
             } else {
                 player.playVideo();
                 btn.innerText = "pause";
-                btn.style.display = "block";
-                setTimeout(() => { btn.style.display = "none"; }, 800);
             }
             isPlaying = !isPlaying;
+            event.stopPropagation();
+        }
+
+        function skipSec(sec) {
+            player.seekTo(player.getCurrentTime() + sec);
+            event.stopPropagation();
         }
 
         function updateSeek() {
@@ -138,7 +163,7 @@
         async function loadPageData() {
             document.getElementById('v-title').innerText = decodeURIComponent(urlParams.get('t'));
             document.getElementById('c-name').innerText = decodeURIComponent(urlParams.get('c'));
-            document.getElementById('c-img').src = `https://i.pravatar.cc/100?u=${urlParams.get('c')}`;
+            document.getElementById('c-img').src = `https://ui-avatars.com/api/?name=${urlParams.get('c')}&background=random`;
 
             const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://www.youtube.com/feeds/videos.xml?channel_id=UCq-Fj5jknLsUf-MWSy4_brA`);
             const data = await res.json();
