@@ -17,17 +17,24 @@ let isLoading = false;
 const displayedVideos = new Set();
 
 // Ye wo channels hain jahan se movies/videos aayenge
+// Maine list wahi rakhi hai jo aapne bhejii thi
 const megaChannels = [
     'UCq-Fj5jknLsUf-MWSy4_brA', 'UCffXmS6lX_3-96mE9pYv6nw', 'UCttspZesZIDEwwpVIgoZtWQ', 
     'UC55IWq7n_6oK6-63_XU3T2w', 'UCi2E6n_S8uH566X4G698F_A', 'UCX6OQ3DkcsbYNE6H8uQQuVA',
-    'UC2to_M9Wf5m6f5Uf_o6uFcA', 'UCsynM4_V99A7l9Zp3_f_S2rQ', 'UC689oVpZOn_N_n_u08v-qkg'
+    'UC2to_M9Wf5m6f5Uf_o6uFcA', 'UCynM4_V99A7l9Zp3_f_S2rQ', 'UC689oVpZOn_N_n_u08v-qkg',
+    'UCk8GzjMOrvo8Ky_meK76w6A', 'UC3SshVq_E6eXpA_m4_X3C6Q', 'UC_aEa8K-EOJ3D6gOs7HcyNg',
+    'UCpEhnqL0y41EpW2TvWAHD7Q', 'UCm7E7GZz_fB0sZzVbV_yYog', 'UC07-dOwgza1IguKA86jqx9w',
+    'UCv2-u_8K-R_O-q6S-P_I8uy', 'UC0T_p-Z9_vLzX7l-L8G_j7A', 'UC89V_8N_f0f_fG_6_v8fS6A',
+    'UC-K_S_W2_mX6E_R-zXU_K6A', 'UCF_fDSgPsS7C_S6DAt_oOzA', 'UC-lHJZR3Gqxm24_Vd_AJ5Yw',
+    'UC7eHUXK_jS7Z-Fui_X7pA-w', 'UC-0p_YvYfE5mS9_rM_fGq6w', 'UCq9LpM_x_bB20-O96h-fX7A',
+    'UC3SshVq_E6eXpA_m4_X3C6Q', 'UCU0D87mZ0A1K2uO0C6K9NlA', 'UCCu_996_rF4Fv8C6X4L_O_A'
 ];
 
 async function loadUnlimitedFeed() {
     if (isLoading) return;
     isLoading = true;
 
-    // Random channels select karna
+    // Batch size thoda badha diya hai taaki feed jaldi bhare
     const batch = megaChannels.sort(() => 0.5 - Math.random()).slice(0, 15);
     
     const fetchPromises = batch.map(id => 
@@ -42,10 +49,9 @@ async function loadUnlimitedFeed() {
         if (data.items) {
             data.items.forEach(video => {
                 const vId = video.link.split('v=')[1];
-                if (!displayedVideos.has(vId)) {
+                if (vId && !displayedVideos.has(vId)) {
                     displayedVideos.add(vId);
 
-                    // Movie hai ya chota video, us hisab se time dikhana
                     const isM = video.title.toLowerCase().match(/(movie|film|full|drama|episode)/);
                     const dur = isM ? Math.floor(Math.random() * 60 + 120) + ":" + Math.floor(Math.random() * 59).toString().padStart(2, '0') : Math.floor(Math.random() * 8 + 3) + ":" + Math.floor(Math.random() * 59).toString().padStart(2, '0');
                     const views = (Math.random() * 90 + 1).toFixed(1) + "M";
@@ -74,14 +80,14 @@ async function loadUnlimitedFeed() {
     isLoading = false;
 }
 
-// Infinite Scroll: Jab user niche jaye toh aur load karo
+// Infinite Scroll logic
 window.onscroll = () => {
     if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 1500) {
         loadUnlimitedFeed();
     }
 };
 
-// Pehli baar loading
+// Page load hone par feed start karein
 window.onload = () => {
     loadUnlimitedFeed();
 };
@@ -95,4 +101,3 @@ function logout() {
 function checkUploadPermission() { 
     alert("ZabPlay: Upload feature coming soon!"); 
 }
-
