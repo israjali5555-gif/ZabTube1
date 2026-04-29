@@ -4,113 +4,152 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
-    <title>Pro Player</title>
+    <title>Professional App Player</title>
     <style>
         body { background:#000; color:white; margin:0; font-family: sans-serif; overflow-x: hidden; }
-        .vid-frame { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; overflow: hidden; }
         
-        /* YouTube Logo Hide Hack */
-        iframe { position: absolute; top: -12%; left: -1%; width: 102%; height: 124%; border: none; pointer-events: none; }
+        /* Video Area */
+        .video-box { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; }
+        iframe { width: 100%; height: 100%; border: none; pointer-events: none; }
 
-        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; display: flex; flex-direction: column; justify-content: space-between; }
-        .center-play { flex: 1; display: flex; align-items: center; justify-content: center; }
-        .main-icon { font-size: 50px; background: rgba(0,0,0,0.6); border-radius: 50%; padding: 10px; opacity: 0; }
-        
+        /* Gesture Layer (Khali Jagah) */
+        .gesture-layer { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            z-index: 5; display: flex;
+        }
+        .side-zone { flex: 1; height: 100%; } /* Left & Right side for Skip */
+
+        /* Real Play/Pause Button */
+        .ui-layer { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            z-index: 10; pointer-events: none; /* Taaki niche click ho sake */
+            display: flex; align-items: center; justify-content: center;
+        }
+        .play-btn-circle { 
+            pointer-events: auto; /* Sirf is icon par click kaam karega */
+            font-size: 50px; background: rgba(0,0,0,0.6); 
+            border-radius: 50%; padding: 10px; cursor: pointer; 
+        }
+
         /* Seekbar */
-        .seekbar { width: 100%; height: 4px; background: rgba(255,255,255,0.3); position: relative; cursor: pointer; }
-        .seekbar-fill { height: 100%; background: #f00; width: 0%; pointer-events: none; }
+        .bottom-bar { position: absolute; bottom: 0; width: 100%; z-index: 15; }
+        .progress-line { width: 100%; height: 5px; background: rgba(255,255,255,0.3); cursor: pointer; }
+        .progress-red { height: 100%; background: #f00; width: 0%; }
+
+        /* Content Area */
+        .info-area { padding: 15px; background: #0F0F0F; min-height: 100vh; }
+        .v-title { font-size: 17px; font-weight: 500; margin-bottom: 10px; }
+        .channel-row { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+        .channel-row img { width: 35px; height: 35px; border-radius: 50%; }
         
-        /* Top bar icons */
-        .top-btns { display: flex; justify-content: flex-end; padding: 10px; gap: 15px; background: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent); }
-        .top-btns span { font-size: 22px; cursor: pointer; }
+        .next-video { display: flex; gap: 10px; margin-bottom: 15px; }
+        .next-video img { width: 120px; border-radius: 8px; }
     </style>
 </head>
 <body>
 
-    <div class="vid-frame">
-        <div id="yt-player"></div>
-        <div class="overlay" id="full-overlay">
-            <div class="top-btns" onclick="event.stopPropagation()">
-                <span class="material-icons-outlined">hd</span>
-                <span class="material-icons-outlined" onclick="location.reload()">refresh</span>
-                <span class="material-icons-outlined">fullscreen</span>
-            </div>
+    <div class="video-box">
+        <div id="player"></div>
+        
+        <div class="gesture-layer">
+            <div class="side-zone" ondblclick="skip(-10)"></div> <div class="side-zone" ondblclick="skip(10)"></div>  </div>
 
-            <div class="center-play" id="tap-zone">
-                <span class="material-icons-outlined main-icon" id="play-ui">play_arrow</span>
-            </div>
+        <div class="ui-layer">
+            <span class="material-icons-outlined play-btn-circle" id="play-icon" onclick="togglePlay()">pause</span>
+        </div>
 
-            <div class="seekbar" onclick="seek(event); event.stopPropagation();">
-                <div class="seekbar-fill" id="fill"></div>
+        <div class="bottom-bar">
+            <div class="progress-line" onclick="seek(event)">
+                <div class="progress-red" id="red-bar"></div>
             </div>
         </div>
     </div>
 
-    <div style="padding:15px; background:#0F0F0F;">
-        <h3 id="v-t" style="margin:0; font-size:16px;">Loading...</h3>
-        <p id="c-n" style="color:#aaa; font-size:13px; margin:5px 0;"></p>
-        <div id="list" style="margin-top:20px;"></div>
+    <div class="info-area">
+        <div class="v-title" id="v-t">Video Title Loading...</div>
+        <div class="channel-row">
+            <img id="c-img" src="https://i.pravatar.cc/100">
+            <div id="c-n" style="flex:1;">Channel Name</div>
+            <button style="background:white; color:black; border:none; padding:7px 15px; border-radius:20px; font-weight:bold;">Subscribe</button>
+        </div>
+        
+        <div id="related-videos">
+            </div>
     </div>
 
     <script>
-        const p = new URLSearchParams(window.location.search);
-        let player, playing = false;
+        const params = new URLSearchParams(window.location.search);
+        let player, isPlaying = false;
 
         var tag = document.createElement('script');
         tag.src = "https://www.youtube.com/iframe_api";
         document.head.appendChild(tag);
 
         function onYouTubeIframeAPIReady() {
-            player = new YT.Player('yt-player', {
-                videoId: p.get('v'),
-                playerVars: { 'autoplay': 1, 'controls': 0, 'modestbranding': 1, 'rel': 0, 'iv_load_policy': 3 },
-                events: { 'onReady': (e) => {
-                    e.target.playVideo();
-                    // THE HACK: Hum har 100ms mein awaaz kholne ki koshish karenge
-                    let autoUnmute = setInterval(() => {
-                        if(player.getPlayerState() === 1) {
-                            player.unMute(); 
-                            if(!player.isMuted()) clearInterval(autoUnmute);
-                        }
-                    }, 100);
-                    playing = true;
-                    setInterval(update, 1000);
-                }}
+            player = new YT.Player('player', {
+                videoId: params.get('v'),
+                playerVars: { 'autoplay': 1, 'controls': 0, 'modestbranding': 1, 'rel': 0 },
+                events: {
+                    'onReady': (e) => {
+                        e.target.playVideo();
+                        // Auto-sound fix
+                        setInterval(() => { if(player.isMuted()) player.unMute(); }, 500);
+                        isPlaying = true;
+                        updateBar();
+                        loadNext();
+                    }
+                }
             });
         }
 
-        // Tap Zone Logic
-        document.getElementById('tap-zone').onclick = function(e) {
-            const icon = document.getElementById('play-ui');
-            if (playing) {
+        function togglePlay() {
+            const btn = document.getElementById('play-icon');
+            if (isPlaying) {
                 player.pauseVideo();
-                icon.innerText = "play_arrow";
-                icon.style.opacity = "1";
-                playing = false;
+                btn.innerText = "play_arrow";
             } else {
-                player.unMute();
                 player.playVideo();
-                icon.innerText = "pause";
-                icon.style.opacity = "1";
-                setTimeout(() => { icon.style.opacity = "0"; }, 700);
-                playing = true;
+                btn.innerText = "pause";
             }
-        };
+            isPlaying = !isPlaying;
+        }
 
-        function update() {
-            if(player && player.getCurrentTime) {
-                document.getElementById('fill').style.width = (player.getCurrentTime()/player.getDuration()*100) + "%";
-            }
+        function skip(sec) {
+            player.seekTo(player.getCurrentTime() + sec);
+        }
+
+        function updateBar() {
+            setInterval(() => {
+                if(player && player.getCurrentTime) {
+                    let p = (player.getCurrentTime() / player.getDuration()) * 100;
+                    document.getElementById('red-bar').style.width = p + "%";
+                }
+            }, 1000);
         }
 
         function seek(e) {
-            const pct = (e.clientX / window.innerWidth);
-            player.seekTo(player.getDuration() * pct);
+            let rect = e.target.getBoundingClientRect();
+            let pos = (e.clientX - rect.left) / rect.width;
+            player.seekTo(pos * player.getDuration());
         }
 
-        // Load Data
-        document.getElementById('v-t').innerText = decodeURIComponent(p.get('t'));
-        document.getElementById('c-n').innerText = decodeURIComponent(p.get('c'));
+        async function loadNext() {
+            document.getElementById('v-t').innerText = decodeURIComponent(params.get('t'));
+            document.getElementById('c-n').innerText = decodeURIComponent(params.get('c'));
+            
+            // Related videos logic
+            const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://www.youtube.com/feeds/videos.xml?channel_id=UCq-Fj5jknLsUf-MWSy4_brA`);
+            const data = await res.json();
+            let html = "<h4>Up Next</h4>";
+            data.items.forEach(v => {
+                const id = v.link.split('v=')[1];
+                html += `<div class="next-video" onclick="location.href='player.html?v=${id}&t=${encodeURIComponent(v.title)}&c=${encodeURIComponent(v.author)}'">
+                    <img src="https://img.youtube.com/vi/${id}/mqdefault.jpg">
+                    <div><p style="font-size:14px; margin:0;">${v.title.substring(0,40)}...</p></div>
+                </div>`;
+            });
+            document.getElementById('related-videos').innerHTML = html;
+        }
     </script>
 </body>
 </html>
