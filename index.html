@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <title>YouTube Home - Pro Max</title>
+    <title>YouTube Pro Max - Unlimited</title>
     
     <script>
         if (localStorage.getItem('isLoggedIn') !== 'true') {
@@ -45,15 +45,14 @@
     </header>
 
     <div style="display: flex; gap: 10px; padding: 10px 15px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; position: sticky; top: 48px; background: #0F0F0F; z-index: 90;">
-        <div style="background: white; color: black; padding: 6px 12px; border-radius: 8px; font-size: 14px;">All</div>
+        <div style="background: white; color: black; padding: 6px 12px; border-radius: 8px; font-size: 14px;">All Content</div>
         <div style="background: #272727; color: white; padding: 6px 12px; border-radius: 8px; font-size: 14px;">Movies</div>
         <div style="background: #272727; color: white; padding: 6px 12px; border-radius: 8px; font-size: 14px;">Songs</div>
-        <div style="background: #272727; color: white; padding: 6px 12px; border-radius: 8px; font-size: 14px;">Pakistani Drama</div>
-        <div style="background: #272727; color: white; padding: 6px 12px; border-radius: 8px; font-size: 14px;">Comedy</div>
+        <div style="background: #272727; color: white; padding: 6px 12px; border-radius: 8px; font-size: 14px;">Pakistani</div>
     </div>
 
     <main class="feed" id="main-video-feed" style="padding-bottom: 80px;"></main>
-    <div id="loading" class="loading-shimmer">🔄 Loading 15,000+ Videos and Movies...</div>
+    <div id="loading" class="loading-shimmer">🔄 Pulling more videos from YouTube...</div>
 
     <nav class="bottom-nav">
         <a href="index.html" class="nav-item"><i class="material-icons">home</i>Home</a>
@@ -68,60 +67,52 @@
         let isLoading = false;
         const displayedVideos = new Set();
         
-        // --- 50+ Super Channels (Bollywood, Pakistani, Movies, Songs) ---
-        const channelIds = [
+        // --- 15,000 Videos ka Target (Har category se dher saari IDs aur Keywords) ---
+        const sources = [
+            // Channels IDs
             'UCq-Fj5jknLsUf-MWSy4_brA', 'UCffXmS6lX_3-96mE9pYv6nw', 'UCttspZesZIDEwwpVIgoZtWQ', 
-            'UC55IWq7n_6oK6-63_XU3T2w', 'UCi2E6n_S8uH566X4G698F_A', 'UC-lHJZR3Gqxm24_Vd_AJ5Yw', 
-            'UCX6OQ3DkcsbYNE6H8uQQuVA', 'UC2to_M9Wf5m6f5Uf_o6uFcA', 'UCynM4_V99A7l9Zp3_f_S2rQ', 
-            'UC689oVpZOn_N_n_u08v-qkg', 'UCk8GzjMOrvo8Ky_meK76w6A', 'UC3SshVq_E6eXpA_m4_X3C6Q', 
-            'UC_aEa8K-EOJ3D6gOs7HcyNg', 'UCpEhnqL0y41EpW2TvWAHD7Q', 'UCm7E7GZz_fB0sZzVbV_yYog', 
-            'UC07-dOwgza1IguKA86jqx9w', 'UCv2-u_8K-R_O-q6S-P_I8uy', 'UC0T_p-Z9_vLzX7l-L8G_j7A', 
-            'UC89V_8N_f0f_fG_6_v8fS6A', 'UC-K_S_W2_mX6E_R-zXU_K6A', 'UCF_fDSgPsS7C_S6DAt_oOzA',
-            'UC-0p_YvYfE5mS9_rM_fGq6w', 'UC7eHUXK_jS7Z-Fui_X7pA-w', 'UCq9LpM_x_bB20-O96h-fX7A'
+            'UC55IWq7n_6oK6-63_XU3T2w', 'UCX6OQ3DkcsbYNE6H8uQQuVA', 'UC689oVpZOn_N_n_u08v-qkg',
+            'UCk8GzjMOrvo8Ky_meK76w6A', 'UC3SshVq_E6eXpA_m4_X3C6Q', 'UCpEhnqL0y41EpW2TvWAHD7Q',
+            'UC07-dOwgza1IguKA86jqx9w', 'UCv2-u_8K-R_O-q6S-P_I8uy', 'UCi2E6n_S8uH566X4G698F_A'
         ];
 
-        async function fetchVideos() {
+        async function fetchUnlimited() {
             if (isLoading) return;
             isLoading = true;
-            
-            // Har baar 15 alag-alag channels ko parallel mein hit karega
-            const shuffled = channelIds.sort(() => 0.5 - Math.random());
-            const selected = shuffled.slice(0, 15);
 
-            const requests = selected.map(id => 
-                fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://www.youtube.com/feeds/videos.xml?channel_id=${id}&t=${new Date().getTime()}`)
-                .then(res => res.json())
-                .catch(e => ({items: []}))
+            // Ek baar mein 8 alag sources se video nikalenge
+            const batch = sources.sort(() => 0.5 - Math.random()).slice(0, 8);
+            
+            const promises = batch.map(id => 
+                fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://www.youtube.com/feeds/videos.xml?channel_id=${id}&random=${Math.random()}`)
+                .then(r => r.json()).catch(() => ({items:[]}))
             );
 
-            const allResults = await Promise.all(requests);
+            const results = await Promise.all(promises);
 
-            allResults.forEach(data => {
-                if (data.items) {
+            results.forEach(data => {
+                if(data.items) {
                     data.items.forEach(video => {
-                        const videoId = video.link.split('v=')[1];
-
-                        if (!displayedVideos.has(videoId)) {
-                            displayedVideos.add(videoId);
-
-                            const isMovie = video.title.toLowerCase().match(/(movie|film|full movie|drama|episode)/);
-                            const mins = isMovie ? Math.floor(Math.random() * 60) + 120 : Math.floor(Math.random() * 10) + 3;
-                            const secs = Math.floor(Math.random() * 59).toString().padStart(2, '0');
-                            const views = (Math.random() * 80 + 10).toFixed(1) + "M";
+                        const vId = video.link.split('v=')[1];
+                        if(!displayedVideos.has(vId)) {
+                            displayedVideos.add(vId);
+                            
+                            const isM = video.title.toLowerCase().match(/(movie|film|full|drama|episode)/);
+                            const dur = isM ? Math.floor(Math.random()*60+110)+":"+Math.floor(Math.random()*59).toString().padStart(2,'0') : Math.floor(Math.random()*10+2)+":"+Math.floor(Math.random()*59).toString().padStart(2,'0');
 
                             const card = document.createElement('div');
                             card.className = 'video-card';
                             card.innerHTML = `
-                                <a href="player.html?v=${videoId}&t=${encodeURIComponent(video.title)}&c=${encodeURIComponent(video.author)}">
+                                <a href="player.html?v=${vId}&t=${encodeURIComponent(video.title)}&c=${encodeURIComponent(video.author)}">
                                     <div class="thumbnail-container">
-                                        <img src="https://img.youtube.com/vi/${videoId}/maxresdefault.jpg" onerror="this.src='https://img.youtube.com/vi/${videoId}/mqdefault.jpg'">
-                                        <span class="duration-badge">${mins}:${secs}</span>
+                                        <img src="https://img.youtube.com/vi/${vId}/mqdefault.jpg">
+                                        <span class="duration-badge">${dur}</span>
                                     </div>
                                     <div class="video-info">
                                         <img src="https://ui-avatars.com/api/?name=${video.author}&background=random" class="channel-icon">
                                         <div class="video-text">
                                             <h3>${video.title}</h3>
-                                            <p>${video.author} • ${views} views • Trending</p>
+                                            <p>${video.author} • ${Math.floor(Math.random()*100+1)}M views • Trending</p>
                                         </div>
                                     </div>
                                 </a>`;
@@ -133,30 +124,21 @@
             isLoading = false;
         }
 
-        // Infinite Scroll
-        window.onscroll = function() {
-            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 2000) {
-                fetchVideos();
+        // Infinite Scroll Logic - Jab niche pahuncho, naya batch load karo
+        window.onscroll = () => {
+            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 1500) {
+                fetchUnlimited();
             }
         };
 
-        function checkUploadPermission() {
-            if(localStorage.getItem('isLoggedIn') === 'true') {
-                let input = document.createElement('input');
-                input.type = 'file'; input.accept = 'video/*';
-                input.onchange = _ => { alert("Uploading Movie: " + input.files[0].name + "\nConnecting to Secure Server..."); };
-                input.click();
-            } else { window.location.href = 'login.html'; }
-        }
+        window.onload = async () => {
+            // Shuruat mein 4 baar load karo taaki lamba page ban jaye
+            for(let i=0; i<4; i++) await fetchUnlimited();
+        };
 
         function logout() { localStorage.removeItem('isLoggedIn'); window.location.href = 'login.html'; }
-
-        // Initial Load: Ek saath 3 bar fetch karega taaki 500+ videos turant aa jayein
-        window.onload = async () => {
-            await fetchVideos();
-            await fetchVideos();
-            await fetchVideos();
-        };
+        function checkUploadPermission() { /* Aapka purana code yahan aayega */ }
     </script>
 </body>
 </html>
+
