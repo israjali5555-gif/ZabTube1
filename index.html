@@ -81,5 +81,40 @@
         }
         window.onload = fetchTrendingVideos;
     </script>
+    <style>
+    .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #0F0F0F; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #333; z-index: 1000; }
+    .nav-item { color: white; text-align: center; font-size: 10px; text-decoration: none; }
+    .nav-item i { font-size: 24px; display: block; }
+    .upload-btn { font-size: 40px !important; margin-top: -15px; color: white; }
+</style>
+
+<div class="bottom-nav">
+    <a href="#" class="nav-item"><i class="material-icons">home</i>Home</a>
+    <a href="#" class="nav-item"><i class="material-icons">bolt</i>Shorts</a>
+    <div class="nav-item" onclick="checkUploadPermission()"><i class="material-icons upload-btn">add_circle_outline</i></div>
+    <a href="#" class="nav-item"><i class="material-icons">subscriptions</i>Subs</a>
+    <a href="#" class="nav-item"><i class="material-icons">account_circle</i>You</a>
+</div>
+
+<script>
+    function checkUploadPermission() {
+        if(localStorage.getItem('isLoggedIn') === 'true') {
+            alert("Permission Granted! Opening Video Gallery...");
+            // Yahan hum File picker kholenge
+            let input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'video/*';
+            input.onchange = _ => {
+                let file = input.files[0];
+                alert("Uploading: " + file.name + " (" + (file.size/1024/1024).toFixed(2) + " MB)");
+                // Yahan movie upload ka logic aayega
+            };
+            input.click();
+        } else {
+            alert("Please login first to upload videos.");
+            window.location.href = 'login.html';
+        }
+    }
+</script>
 </body>
 </html>
