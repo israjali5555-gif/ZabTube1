@@ -81,5 +81,11 @@
         }
         window.onload = fetchTrendingVideos;
     </script>
+    // index.html ke script mein ye line sabse upar daal do
+document.body.addEventListener('click', () => {
+    localStorage.setItem('userInteracted', 'true');
+}, { once: true });
+
+// Baaki aapka purana fetch logic wahi rahega...
 </body>
 </html>
