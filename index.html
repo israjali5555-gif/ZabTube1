@@ -2,48 +2,87 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-    <title>YouTube Home</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <title>YouTube Home - Pro</title>
+    
+    <script>
+        // STEP 1: Security Check (Agar login nahi hai toh login page par bhej do)
+        if (localStorage.getItem('isLoggedIn') !== 'true') {
+            window.location.href = 'login.html';
+        }
+    </script>
+
     <style>
-        body { background:#0F0F0F; margin:0; font-family: Roboto, Arial, sans-serif; }
-        .video-card { width: 100%; margin-bottom: 8px; border-bottom: 1px solid #222; }
+        body { background:#0F0F0F; margin:0; font-family: Roboto, Arial, sans-serif; color: white; }
+        
+        /* Header Fix */
+        .header { position: sticky; top: 0; background: #0F0F0F; z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; }
+        
+        /* Video Card Style */
+        .video-card { width: 100%; margin-bottom: 12px; border-bottom: 1px solid #222; }
         .thumbnail-container { position: relative; width: 100%; aspect-ratio: 16/9; }
         .thumbnail-container img { width: 100%; height: 100%; display: block; object-fit: cover; }
-        .duration-badge { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.8); color: white; padding: 3px 6px; font-size: 12px; border-radius: 4px; font-weight: 500; }
+        .duration-badge { position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.8); color: white; padding: 2px 6px; font-size: 11px; border-radius: 4px; }
+        
         .video-info { display: flex; padding: 12px; gap: 12px; }
-        .channel-icon { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
-        .video-text h3 { font-size: 15px; color: white; margin: 0; line-height: 1.4; font-weight: 500; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .video-text p { font-size: 12px; color: #aaa; margin: 5px 0 0 0; }
-        a { text-decoration: none; }
+        .channel-icon { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; background: #333; }
+        .video-text h3 { font-size: 14px; color: white; margin: 0; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .video-text p { font-size: 12px; color: #aaa; margin: 4px 0 0 0; }
+        
+        a { text-decoration: none; color: inherit; }
+
+        /* Bottom Nav Fix */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #0F0F0F; display: flex; justify-content: space-around; padding: 8px 0; border-top: 1px solid #333; z-index: 1000; }
+        .nav-item { color: white; text-align: center; font-size: 10px; text-decoration: none; display: flex; flex-direction: column; align-items: center; }
+        .nav-item i { font-size: 24px; margin-bottom: 2px; }
+        .upload-btn-main { font-size: 42px !important; margin-top: -10px; color: #fff; }
     </style>
 </head>
 <body>
 
-    <header class="header" style="position: sticky; top: 0; background: #0F0F0F; z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: 10px 15px;">
-        <div class="logo"><img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg" width="90"></div>
-        <div class="header-icons" style="display: flex; gap: 15px; color: white;">
-            <span class="material-icons-outlined">cast</span>
-            <span class="material-icons-outlined">notifications</span>
-            <span class="material-icons-outlined">search</span>
-            <div style="width: 28px; height: 28px; border-radius: 50%; background: #3ea6ff; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold;">R</div>
+    <header class="header">
+        <div class="logo">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg" width="90">
+        </div>
+        <div class="header-icons" style="display: flex; gap: 18px;">
+            <i class="material-icons">cast</i>
+            <i class="material-icons">notifications_none</i>
+            <i class="material-icons">search</i>
+            <div style="width: 26px; height: 26px; border-radius: 50%; background: #FF5722; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: bold;" onclick="logout()">R</div>
         </div>
     </header>
 
-    <main class="feed" id="main-video-feed" style="padding-bottom: 70px;"></main>
+    <div style="display: flex; gap: 10px; padding: 10px 15px; overflow-x: auto; white-space: nowrap; scrollbar-width: none;">
+        <div style="background: white; color: black; padding: 6px 12px; border-radius: 8px; font-size: 14px;">All</div>
+        <div style="background: #272727; color: white; padding: 6px 12px; border-radius: 8px; font-size: 14px;">Music</div>
+        <div style="background: #272727; color: white; padding: 6px 12px; border-radius: 8px; font-size: 14px;">Movies</div>
+        <div style="background: #272727; color: white; padding: 6px 12px; border-radius: 8px; font-size: 14px;">Gaming</div>
+    </div>
+
+    <main class="feed" id="main-video-feed" style="padding-bottom: 80px;"></main>
 
     <nav class="bottom-nav">
-        <a href="index.html" class="nav-item active"><span class="material-icons-outlined">home</span><br>Home</a>
-        <a href="shorts.html" class="nav-item"><span class="material-icons-outlined">explore</span><br>Shorts</a>
-        <a href="#" class="nav-item icon-btn"><span class="material-icons-outlined" style="font-size:38px;">add_circle_outline</span></a>
-        <a href="subscriptions.html" class="nav-item"><span class="material-icons-outlined">subscriptions</span><br>Subs</a>
-        <a href="profile.html" class="nav-item"><span class="material-icons-outlined">account_circle</span><br>You</a>
+        <a href="index.html" class="nav-item">
+            <i class="material-icons">home</i>Home
+        </a>
+        <a href="shorts.html" class="nav-item">
+            <i class="material-icons">bolt</i>Shorts
+        </a>
+        <div class="nav-item" onclick="checkUploadPermission()">
+            <i class="material-icons upload-btn-main">add_circle_outline</i>
+        </div>
+        <a href="subscriptions.html" class="nav-item">
+            <i class="material-icons">subscriptions</i>Subs
+        </a>
+        <a href="profile.html" class="nav-item">
+            <i class="material-icons">account_circle</i>You
+        </a>
     </nav>
 
     <script>
         const videoFeed = document.getElementById('main-video-feed');
-        // Trending channel IDs (Aap inhein badal sakte hain)
+        // Trending Channel IDs
         const channelIds = ['UCq-Fj5jknLsUf-MWSy4_brA', 'UC_aEa8K-EOJ3D6gOs7HcyNg', 'UCeVMnSShP_I8uyEQbbQjwGg'];
 
         async function fetchTrendingVideos() {
@@ -54,8 +93,7 @@
                     
                     data.items.forEach(video => {
                         const videoId = video.link.split('v=')[1];
-                        // Har video ka alag aur real dikhne wala duration (e.g. 12:45)
-                        const mins = Math.floor(Math.random() * 10) + 2;
+                        const mins = Math.floor(Math.random() * 15) + 2;
                         const secs = Math.floor(Math.random() * 59).toString().padStart(2, '0');
                         const realDuration = `${mins}:${secs}`;
 
@@ -67,7 +105,7 @@
                                     <span class="duration-badge">${realDuration}</span>
                                 </div>
                                 <div class="video-info">
-                                    <img src="https://i.pravatar.cc/100?u=${video.author}" class="channel-icon">
+                                    <img src="https://ui-avatars.com/api/?name=${video.author}&background=random" class="channel-icon">
                                     <div class="video-text">
                                         <h3>${video.title}</h3>
                                         <p>${video.author} • 1.5M views • 2 hours ago</p>
@@ -76,45 +114,31 @@
                             </a>
                         </div>`;
                     });
-                } catch (error) { console.error("Error fetching videos:", error); }
+                } catch (error) { console.error("Error:", error); }
             }
         }
-        window.onload = fetchTrendingVideos;
-    </script>
-    <style>
-    .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #0F0F0F; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #333; z-index: 1000; }
-    .nav-item { color: white; text-align: center; font-size: 10px; text-decoration: none; }
-    .nav-item i { font-size: 24px; display: block; }
-    .upload-btn { font-size: 40px !important; margin-top: -15px; color: white; }
-</style>
 
-<div class="bottom-nav">
-    <a href="#" class="nav-item"><i class="material-icons">home</i>Home</a>
-    <a href="#" class="nav-item"><i class="material-icons">bolt</i>Shorts</a>
-    <div class="nav-item" onclick="checkUploadPermission()"><i class="material-icons upload-btn">add_circle_outline</i></div>
-    <a href="#" class="nav-item"><i class="material-icons">subscriptions</i>Subs</a>
-    <a href="#" class="nav-item"><i class="material-icons">account_circle</i>You</a>
-</div>
+        function checkUploadPermission() {
+            if(localStorage.getItem('isLoggedIn') === 'true') {
+                let input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'video/*';
+                input.onchange = _ => {
+                    let file = input.files[0];
+                    alert("Uploading Movie: " + file.name + "\nPlease wait, server is connecting...");
+                };
+                input.click();
+            } else {
+                window.location.href = 'login.html';
+            }
+        }
 
-<script>
-    function checkUploadPermission() {
-        if(localStorage.getItem('isLoggedIn') === 'true') {
-            alert("Permission Granted! Opening Video Gallery...");
-            // Yahan hum File picker kholenge
-            let input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'video/*';
-            input.onchange = _ => {
-                let file = input.files[0];
-                alert("Uploading: " + file.name + " (" + (file.size/1024/1024).toFixed(2) + " MB)");
-                // Yahan movie upload ka logic aayega
-            };
-            input.click();
-        } else {
-            alert("Please login first to upload videos.");
+        function logout() {
+            localStorage.removeItem('isLoggedIn');
             window.location.href = 'login.html';
         }
-    }
-</script>
+
+        window.onload = fetchTrendingVideos;
+    </script>
 </body>
 </html>
