@@ -2,11 +2,56 @@
 body { background-color: #0f0f0f; color: white; font-family: Roboto, Arial, sans-serif; padding-bottom: 70px; overflow-x: hidden; }
 a { text-decoration: none; color: inherit; display: inline-block; width: 100%; }
 
-/* Header Fix */
-.header { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; position: sticky; top: 0; background: #0f0f0f; z-index: 100; }
-.header-icons { display: flex; align-items: center; gap: 20px; }
+/* === NAYA ADDITION: SPLASH SCREEN STYLE === */
+#zabplay-splash {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #0f0f0f;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+.splash-logo {
+    width: 140px; /* Splash par bada logo */
+    animation: splashZoom 1.2s ease-out forwards;
+}
+@keyframes splashZoom {
+    0% { transform: scale(0.7); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* === HEADER LOGO CENTER FIX === */
+.header { 
+    display: flex; 
+    align-items: center; 
+    padding: 10px 15px; 
+    position: sticky; 
+    top: 0; 
+    background: #0f0f0f; 
+    z-index: 100; 
+    height: 55px;
+}
+.header .logo {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+}
+.header-icons { 
+    margin-left: auto; /* Icons ko right side rakhega */
+    display: flex; 
+    align-items: center; 
+    gap: 20px; 
+}
+
+/* === BAAKI AAPKA PURANA CSS WAISA HI HAI === */
 .material-icons-outlined { font-size: 24px; cursor: pointer; color: white; }
-.user-profile-circle { background: #3ea6ff; padding: 4px 10px; border-radius: 50%; font-size: 14px; font-weight: bold; }
+.user-profile-circle { background: #FF5722; padding: 4px 10px; border-radius: 50%; font-size: 14px; font-weight: bold; }
 
 /* Categories */
 .categories { display: flex; gap: 10px; padding: 12px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
@@ -17,7 +62,7 @@ a { text-decoration: none; color: inherit; display: inline-block; width: 100%; }
 /* Video Feed Fix */
 .video-card { margin-bottom: 15px; width: 100%; }
 .thumbnail-container { width: 100%; aspect-ratio: 16/9; background: #222; position: relative; overflow: hidden; }
-.feed-video { width: 100%; height: 100%; object-fit: cover; display: block; } /* Isse black corner hat jayega */
+.feed-video { width: 100%; height: 100%; object-fit: cover; display: block; }
 .vid-time { position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.8); color: white; padding: 2px 5px; border-radius: 4px; font-size: 11px; }
 
 .video-info { display: flex; padding: 12px; gap: 12px; }
@@ -27,13 +72,12 @@ a { text-decoration: none; color: inherit; display: inline-block; width: 100%; }
 
 /* Bottom Navigation */
 .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 55px; background: #0f0f0f; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #333; z-index: 1000; }
-.nav-item { text-align: center; color: #aaaaaa; font-size: 10px; flex: 1; }
+.nav-item { text-align: center; color: #aaaaaa; font-size: 10px; flex: 1; text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center;}
 .nav-item.active { color: white; }
 
 /* Player Page Buttons */
 .action-btn { background: #272727; color: white; border: none; padding: 8px 15px; border-radius: 20px; display: flex; align-items: center; gap: 8px; font-size: 13px; }
 
-/* Purani CSS ke saath ise jodein ya replace karein */
 .icon-btn {
     display: inline-flex;
     align-items: center;
@@ -42,22 +86,8 @@ a { text-decoration: none; color: inherit; display: inline-block; width: 100%; }
     text-decoration: none;
 }
 
-.nav-item {
-    text-align: center;
-    color: #aaaaaa;
-    text-decoration: none;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-
-.nav-item.active {
-    color: white;
-}
-
-/* Isse click karne par halka highlight hoga */
+/* Click highlight effect */
 .nav-item:active, .icon-btn:active {
     opacity: 0.6;
 }
+
