@@ -4,10 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <title>ZabPlay - Premium Video Experience</title>
+    <title>ZabPlay - Unlimited Experience</title>
     
     <script>
-        // Login check
         if (localStorage.getItem('isLoggedIn') !== 'true') {
             window.location.href = 'login.html';
         }
@@ -45,14 +44,14 @@
         }
 
         /* === VIDEO FEED STYLE === */
-        .video-card { width: 100%; margin-bottom: 15px; animation: fadeIn 0.5s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .video-card { width: 100%; margin-bottom: 15px; animation: fadeIn 0.5s ease-in; cursor: pointer; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
         .thumbnail-container { position: relative; width: 100%; aspect-ratio: 16/9; background: #222; }
         .thumbnail-container img { width: 100%; height: 100%; object-fit: cover; }
         
         .video-info { display: flex; padding: 12px; gap: 12px; }
-        .channel-icon { width: 40px; height: 40px; border-radius: 50%; background: #333; }
+        .channel-icon { width: 40px; height: 40px; border-radius: 50%; background: #333; flex-shrink: 0; }
         
         .video-text h3 { font-size: 15px; margin: 0; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .video-text p { font-size: 12px; color: #aaa; margin: 5px 0 0 0; }
@@ -61,19 +60,20 @@
         .brand-container { display: flex; align-items: center; gap: 10px; }
         .brand-name { font-size: 20px; font-weight: bold; }
 
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #0F0F0F; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #333; }
-        .nav-item { color: white; text-align: center; font-size: 10px; text-decoration: none; }
-        .nav-item i { font-size: 24px; display: block; }
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #0F0F0F; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #333; z-index: 1000; }
+        .nav-item { color: white; text-align: center; font-size: 10px; text-decoration: none; opacity: 0.8; }
+        .nav-item:hover { opacity: 1; }
+        .nav-item i { font-size: 24px; display: block; margin-bottom: 2px; }
 
         #zabplay-splash { position: fixed; inset: 0; background: #0F0F0F; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; }
-        .loading-shimmer { padding: 20px; text-align: center; color: #FF0000; font-weight: bold; }
+        .loading-shimmer { padding: 30px; text-align: center; color: #FF0000; font-weight: bold; font-size: 14px; }
     </style>
 </head>
 <body>
 
     <div id="zabplay-splash">
         <div class="splash-logo-box"></div>
-        <h2 style="margin-top: 20px; letter-spacing: 2px;">ZABPLAY</h2>
+        <h2 style="margin-top: 20px; letter-spacing: 2px; font-family: sans-serif;">ZABPLAY</h2>
     </div>
 
     <header class="header">
@@ -81,14 +81,15 @@
             <div class="zab-logo-box"></div>
             <span class="brand-name">ZabPlay</span>
         </div>
-        <div style="display: flex; gap: 15px;">
+        <div style="display: flex; gap: 15px; align-items: center;">
+            <i class="material-icons">cast</i>
             <i class="material-icons">search</i>
-            <div style="width: 28px; height: 28px; border-radius: 50%; background: #FF5722; text-align: center; line-height: 28px; font-weight: bold;" onclick="logout()">R</div>
+            <div style="width: 28px; height: 28px; border-radius: 50%; background: #FF5722; text-align: center; line-height: 28px; font-weight: bold; font-size: 14px;" onclick="logout()">R</div>
         </div>
     </header>
 
-    <main id="main-video-feed" style="padding-bottom: 70px;"></main>
-    <div id="loading" class="loading-shimmer">FETCHING TRENDING VIDEOS...</div>
+    <main id="main-video-feed" style="padding-bottom: 80px;"></main>
+    <div id="loading" class="loading-shimmer">LOADING UNLIMITED VIDEOS...</div>
 
     <nav class="bottom-nav">
         <a href="index.html" class="nav-item"><i class="material-icons">home</i>Home</a>
@@ -98,55 +99,79 @@
     </nav>
 
     <script>
-        // HIDE SPLASH
+        const API_KEY = 'AIzaSyDq0kXgyqtOFXPjytI5yw5tuIZYl-xuTFs'; //
+        const videoFeed = document.getElementById('main-video-feed');
+        let nextPageToken = ''; 
+        let isLoading = false;
+
+        // Splash hide and initial load
         window.onload = () => {
             setTimeout(() => {
-                document.getElementById('zabplay-splash').style.display = 'none';
-                loadYouTubeVideos();
-            }, 2000);
+                document.getElementById('zabplay-splash').style.transition = 'opacity 0.5s';
+                document.getElementById('zabplay-splash').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('zabplay-splash').style.display = 'none';
+                    loadYouTubeVideos();
+                }, 500);
+            }, 2500);
         };
 
-        const API_KEY = 'AIzaSyDq0kXgyqtOFXPjytI5yw5tuIZYl-xuTFs'; // AAPKI NAYI KEY
-        const videoFeed = document.getElementById('main-video-feed');
-
         async function loadYouTubeVideos() {
+            if (isLoading) return;
+            isLoading = true;
+            document.getElementById('loading').style.display = 'block';
+
             try {
-                // Fetching Trending Videos using your API Key
-                const response = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics,contentDetails&chart=mostPopular&regionCode=IN&maxResults=20&key=${API_KEY}`);
+                // Fetching Trending Videos with Pagination Support
+                const url = `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&chart=mostPopular&regionCode=IN&maxResults=20&pageToken=${nextPageToken}&key=${API_KEY}`;
+                
+                const response = await fetch(url);
                 const data = await response.json();
 
                 if (data.items) {
+                    nextPageToken = data.nextPageToken || ''; // Agle page ke liye token save kiya
+
                     data.items.forEach(video => {
                         const vId = video.id;
                         const title = video.snippet.title;
                         const channel = video.snippet.channelTitle;
                         const views = parseInt(video.statistics.viewCount).toLocaleString() + " views";
-                        const thumb = video.snippet.thumbnails.high.url;
+                        const thumb = video.snippet.thumbnails.high ? video.snippet.thumbnails.high.url : video.snippet.thumbnails.medium.url;
 
                         const card = document.createElement('div');
                         card.className = 'video-card';
+                        card.onclick = () => window.location.href = `player.html?v=${vId}`;
                         card.innerHTML = `
-                            <div onclick="window.location.href='player.html?v=${vId}'">
-                                <div class="thumbnail-container">
-                                    <img src="${thumb}">
-                                </div>
-                                <div class="video-info">
-                                    <div class="channel-icon" style="background-image: url('https://ui-avatars.com/api/?name=${channel}'); background-size: cover;"></div>
-                                    <div class="video-text">
-                                        <h3>${title}</h3>
-                                        <p>${channel} • ${views}</p>
-                                    </div>
+                            <div class="thumbnail-container">
+                                <img src="${thumb}">
+                            </div>
+                            <div class="video-info">
+                                <div class="channel-icon" style="background-image: url('https://ui-avatars.com/api/?name=${encodeURIComponent(channel)}&background=random'); background-size: cover;"></div>
+                                <div class="video-text">
+                                    <h3>${title}</h3>
+                                    <p>${channel} • ${views}</p>
                                 </div>
                             </div>`;
                         videoFeed.appendChild(card);
                     });
-                    document.getElementById('loading').style.display = 'none';
                 }
             } catch (error) {
                 console.error("Error loading videos:", error);
-                document.getElementById('loading').innerText = "Limit Reached or Billing Issue";
+                document.getElementById('loading').innerText = "Oops! Connection Problem.";
+            } finally {
+                isLoading = false;
+                document.getElementById('loading').style.display = (nextPageToken) ? 'none' : 'block';
             }
         }
+
+        // INFINITE SCROLL: Jab user scroll karke niche pahuche
+        window.onscroll = () => {
+            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 800) {
+                if (nextPageToken && !isLoading) {
+                    loadYouTubeVideos();
+                }
+            }
+        };
 
         function logout() { localStorage.removeItem('isLoggedIn'); window.location.href = 'login.html'; }
     </script>
