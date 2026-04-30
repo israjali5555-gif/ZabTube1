@@ -4,225 +4,160 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <title>Modern YouTube Player</title>
+    <title>ZabPlay - Premium Player</title>
     <style>
         body { background:#0F0F0F; color:white; margin:0; font-family: "Roboto", sans-serif; overflow-x: hidden; }
         
-        /* 1. Video Container */
-        .video-container { position: relative; width: 96%; margin: 8px auto; aspect-ratio: 16/9; border-radius: 12px; overflow: hidden; background: #000; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        iframe { width: 100%; height: 100%; border: none; pointer-events: none; }
-
-        /* 2. YouTube Style Center Controls (FIXED for Ads) */
-        .ui-overlay { 
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            z-index: 10; display: flex; align-items: center; justify-content: space-evenly;
-            background: rgba(0,0,0,0.4); opacity: 0; transition: opacity 0.3s;
-            pointer-events: none; /* Default none for Ad clicking */
+        /* 1. STICKY VIDEO PLAYER (LOCK ON TOP) */
+        .video-wrapper { 
+            position: sticky; 
+            top: 0; 
+            z-index: 1000; 
+            background: #000; 
+            width: 100%; 
+            aspect-ratio: 16/9; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.8);
         }
-        .ui-overlay.active { opacity: 1; pointer-events: auto; }
-        
-        .ctrl-btn { 
-            font-size: 35px; color: white; background: rgba(0,0,0,0.5); 
-            border-radius: 50%; padding: 12px; cursor: pointer; user-select: none;
-        }
-        .play-pause-btn { font-size: 50px; }
+        #player { width: 100%; height: 100%; }
 
-        /* Quality & Fullscreen Icons */
-        .top-right { position: absolute; top: 10px; right: 10px; display: flex; gap: 15px; }
-        .bottom-right { position: absolute; bottom: 10px; right: 10px; }
-        .small-btn { font-size: 22px; color: white; cursor: pointer; opacity: 0.8; }
+        /* 2. DESCRIPTION AREA */
+        .info-card { padding: 15px; background: #0F0F0F; }
+        .video-title { font-size: 18px; font-weight: bold; line-height: 1.4; margin-bottom: 8px; color: #fff; }
+        .meta-text { font-size: 12px; color: #aaa; margin-bottom: 15px; }
 
-        /* 3. Red Seekbar */
-        .seekbar-box { position: absolute; bottom: 0; width: 100%; height: 3px; background: rgba(255,255,255,0.2); z-index: 20; }
-        .seekbar-red { height: 100%; background: #FF0000; width: 0%; transition: width 0.1s linear; }
-
-        /* 4. Description Area */
-        .info-card { padding: 12px 16px; }
-        .video-title { font-size: 19px; font-weight: bold; line-height: 1.3; margin-bottom: 8px; }
-        .meta-text { font-size: 13px; color: #aaa; margin-bottom: 12px; }
-
-        /* 5. Buttons Row */
-        .action-row { display: flex; gap: 8px; overflow-x: auto; margin-bottom: 16px; padding-bottom: 4px; scrollbar-width: none; }
+        /* 3. ACTION BUTTONS */
+        .action-row { display: flex; gap: 10px; overflow-x: auto; margin-bottom: 20px; scrollbar-width: none; }
         .action-row::-webkit-scrollbar { display: none; }
-        .chip { background: #272727; border: none; color: white; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 500; display: flex; align-items: center; white-space: nowrap; }
+        .chip { background: #272727; border: none; color: white; padding: 8px 16px; border-radius: 20px; font-size: 13px; display: flex; align-items: center; white-space: nowrap; }
         .chip i { font-size: 18px; margin-right: 6px; }
 
-        /* 6. Channel Section */
-        .channel-section { display: flex; align-items: center; gap: 12px; padding: 12px; background: #1E1E1E; border-radius: 12px; margin-bottom: 20px; }
-        .channel-section img { width: 40px; height: 40px; border-radius: 50%; }
-        .sub-btn { background: #F1F1F1; color: #0F0F0F; border: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 13px; }
+        /* 4. REAL CHANNEL SECTION */
+        .channel-section { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid #222; border-bottom: 1px solid #222; margin-bottom: 20px; cursor: pointer; }
+        .channel-section img { width: 40px; height: 40px; border-radius: 50%; background: #333; }
+        .sub-btn { background: #fff; color: #000; border: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 13px; margin-left: auto; }
 
-        /* 7. Suggestions List */
-        .up-next-title { font-size: 16px; font-weight: bold; margin: 10px 0; }
-        .suggestion-card { display: flex; gap: 12px; margin-bottom: 12px; text-decoration: none; color: white; }
-        .suggestion-card img { width: 150px; aspect-ratio: 16/9; border-radius: 8px; object-fit: cover; }
+        /* 5. RELATED VIDEOS LIST */
+        .up-next-title { font-size: 16px; font-weight: bold; padding: 0 15px 10px 15px; }
+        .suggestion-card { display: flex; gap: 12px; padding: 10px 15px; text-decoration: none; color: white; transition: background 0.2s; }
+        .suggestion-card:active { background: #222; }
+        .suggestion-card img { width: 140px; aspect-ratio: 16/9; border-radius: 8px; object-fit: cover; background: #222; }
+        .s-text { flex: 1; }
+        .s-title { font-size: 14px; font-weight: 500; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .s-meta { font-size: 12px; color: #aaa; margin-top: 4px; }
     </style>
 </head>
-<body onclick="showControls()">
+<body>
 
-    <div class="video-container" id="vid-cont">
+    <div class="video-wrapper">
         <div id="player"></div>
-        
-        <div class="ui-overlay" id="ctrl-layer">
-            <div class="top-right">
-                <span class="material-icons small-btn" onclick="openQuality()">settings</span>
-            </div>
-
-            <span class="material-icons ctrl-btn" onclick="skipSec(-10)">skip_previous</span>
-            <span class="material-icons ctrl-btn play-pause-btn" id="ui-btn" onclick="togglePlay()">pause</span>
-            <span class="material-icons ctrl-btn" onclick="skipSec(10)">skip_next</span>
-
-            <div class="bottom-right">
-                <span class="material-icons small-btn" onclick="toggleFull()">fullscreen</span>
-            </div>
-        </div>
-
-        <div class="seekbar-box" onclick="manualSeek(event); event.stopPropagation();">
-            <div class="seekbar-red" id="progress-bar"></div>
-        </div>
     </div>
 
     <div class="info-card">
-        <div class="video-title" id="v-title">Loading...</div>
-        <div class="meta-text">1.2M views • 3 days ago ...more</div>
+        <div class="video-title" id="v-title">Loading video details...</div>
+        <div class="meta-text" id="v-meta">-- views • -- ago</div>
 
         <div class="action-row">
-            <button class="chip"><i class="material-icons">thumb_up</i> 45K</button>
+            <button class="chip"><i class="material-icons">thumb_up_off_alt</i> <span id="v-likes">--</span></button>
             <button class="chip"><i class="material-icons">share</i> Share</button>
-            <button class="chip"><i class="material-icons">file_download</i> Download</button>
-            <button class="chip"><i class="material-icons">content_cut</i> Remix</button>
+            <button class="chip"><i class="material-icons">download</i> Download</button>
+            <button class="chip"><i class="material-icons">playlist_add</i> Save</button>
         </div>
 
-        <div class="channel-section">
+        <div class="channel-section" id="channel-link">
             <img id="c-img" src="">
-            <div style="flex:1;">
-                <div style="font-weight:bold; font-size:15px;" id="c-name">Channel Name</div>
-                <div style="font-size:12px; color:#aaa;">2.5M subscribers</div>
+            <div>
+                <div style="font-weight:bold; font-size:15px;" id="c-name">Loading...</div>
+                <div style="font-size:12px; color:#aaa;" id="c-subs">-- subscribers</div>
             </div>
             <button class="sub-btn">Subscribe</button>
         </div>
-
-        <div class="up-next-title">Up next</div>
-        <div id="suggestions"></div>
     </div>
 
-    <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        let player, isPlaying = false, controlTimer;
+    <div class="up-next-title">Related Videos</div>
+    <div id="suggestions"></div>
 
-        // YouTube API Load
+    <script>
+        const API_KEY = 'AIzaSyDq0kXgyqtOFXPjytI5yw5tuIZYl-xuTFs'; 
+        const urlParams = new URLSearchParams(window.location.search);
+        const videoId = urlParams.get('v');
+
+        if (!videoId) window.location.href = 'index.html';
+
+        // 1. YouTube Player API Setup
         var tag = document.createElement('script');
         tag.src = "https://www.youtube.com/iframe_api";
         document.head.appendChild(tag);
 
+        let player;
         function onYouTubeIframeAPIReady() {
             player = new YT.Player('player', {
-                videoId: urlParams.get('v'),
-                playerVars: { 
-                    'autoplay': 1, 
-                    'controls': 0, 
-                    'modestbranding': 1, 
-                    'rel': 0,
-                    'iv_load_policy': 3 
-                },
+                videoId: videoId,
+                playerVars: { 'autoplay': 1, 'rel': 0, 'modestbranding': 1 },
                 events: { 'onReady': onPlayerReady }
             });
         }
 
         function onPlayerReady(event) {
-            event.target.playVideo();
-            let unmuteInt = setInterval(() => {
-                player.unMute();
-                if(!player.isMuted()) clearInterval(unmuteInt);
-            }, 300);
-            isPlaying = true;
-            setInterval(updateSeek, 1000);
-            loadPageData();
-            showControls();
+            fetchVideoDetails();
         }
 
-        function showControls() {
-            const layer = document.getElementById('ctrl-layer');
-            layer.classList.add('active');
-            clearTimeout(controlTimer);
-            controlTimer = setTimeout(() => {
-                layer.classList.remove('active');
-            }, 3000);
+        // 2. Fetch Real Video & Channel Data
+        async function fetchVideoDetails() {
+            try {
+                // Get Video Title, Views, Likes
+                const vRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${videoId}&key=${API_KEY}`);
+                const vData = await vRes.json();
+                const video = vData.items[0];
+
+                document.getElementById('v-title').innerText = video.snippet.title;
+                document.getElementById('v-meta').innerText = parseInt(video.statistics.viewCount).toLocaleString() + " views";
+                document.getElementById('v-likes').innerText = parseInt(video.statistics.likeCount).toLocaleString();
+
+                const channelId = video.snippet.channelId;
+
+                // Get Channel Photo & Subs
+                const cRes = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&id=${channelId}&key=${API_KEY}`);
+                const cData = await cRes.json();
+                const channel = cData.items[0];
+
+                document.getElementById('c-name').innerText = channel.snippet.title;
+                document.getElementById('c-img').src = channel.snippet.thumbnails.default.url;
+                document.getElementById('c-subs').innerText = formatSubs(channel.statistics.subscriberCount) + " subscribers";
+
+                // Channel Profile Page Link
+                document.getElementById('channel-link').onclick = () => {
+                    window.location.href = `channel.html?cid=${channelId}`;
+                };
+
+                // Load Related Videos based on Category
+                loadRelated(video.snippet.title.split(' ')[0]); // Title ke pehle word se search
+
+            } catch (e) { console.error("API Error", e); }
         }
 
-        function togglePlay() {
-            const btn = document.getElementById('ui-btn');
-            if (isPlaying) {
-                player.pauseVideo();
-                btn.innerText = "play_arrow";
-            } else {
-                player.playVideo();
-                btn.innerText = "pause";
-            }
-            isPlaying = !isPlaying;
-            event.stopPropagation();
-        }
-
-        function skipSec(sec) {
-            player.seekTo(player.getCurrentTime() + sec);
-            event.stopPropagation();
-        }
-
-        function toggleFull() {
-            const container = document.getElementById('vid-cont');
-            if (!document.fullscreenElement) {
-                container.requestFullscreen().catch(err => {
-                    alert(`Error: ${err.message}`);
-                });
-            } else {
-                document.exitFullscreen();
-            }
-            event.stopPropagation();
-        }
-
-        function openQuality() {
-            // Quality set to highest available (4K/HD)
-            player.setPlaybackQuality('hd2160');
-            alert("Setting High Quality (4K)...");
-            event.stopPropagation();
-        }
-
-        function updateSeek() {
-            if(player && player.getCurrentTime) {
-                let p = (player.getCurrentTime() / player.getDuration()) * 100;
-                document.getElementById('progress-bar').style.width = p + "%";
-            }
-        }
-
-        function manualSeek(e) {
-            let rect = e.currentTarget.getBoundingClientRect();
-            let pos = (e.clientX - rect.left) / rect.width;
-            player.seekTo(pos * player.getDuration());
-        }
-
-        async function loadPageData() {
-            document.getElementById('v-title').innerText = decodeURIComponent(urlParams.get('t') || "Video Title");
-            document.getElementById('c-name').innerText = decodeURIComponent(urlParams.get('c') || "Channel Name");
-            document.getElementById('c-img').src = `https://ui-avatars.com/api/?name=${urlParams.get('c')}&background=random`;
-
-            // Suggestion logic (Fetching some videos)
-            const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://www.youtube.com/feeds/videos.xml?channel_id=UCq-Fj5jknLsUf-MWSy4_brA`);
+        // 3. Category Based Suggestions
+        async function loadRelated(query) {
+            const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=15&q=${encodeURIComponent(query)}&type=video&key=${API_KEY}`);
             const data = await res.json();
             let html = "";
-            if(data.items) {
-                data.items.forEach(v => {
-                    const id = v.link.split('v=')[1];
-                    html += `
-                    <a class="suggestion-card" href="player.html?v=${id}&t=${encodeURIComponent(v.title)}&c=${encodeURIComponent(v.author)}">
-                        <img src="https://img.youtube.com/vi/${id}/mqdefault.jpg">
-                        <div>
-                            <div style="font-size:14px; font-weight:500; line-height:1.2;">${v.title.substring(0,50)}...</div>
-                            <div style="font-size:12px; color:#aaa; margin-top:5px;">${v.author}</div>
-                        </div>
-                    </a>`;
-                });
-            }
+            data.items.forEach(item => {
+                if(item.id.videoId === videoId) return; // Same video skip karo
+                html += `
+                <a class="suggestion-card" href="player.html?v=${item.id.videoId}">
+                    <img src="${item.snippet.thumbnails.medium.url}">
+                    <div class="s-text">
+                        <div class="s-title">${item.snippet.title}</div>
+                        <div class="s-meta">${item.snippet.channelTitle}</div>
+                    </div>
+                </a>`;
+            });
             document.getElementById('suggestions').innerHTML = html;
+        }
+
+        function formatSubs(count) {
+            if (count >= 1000000) return (count/1000000).toFixed(1) + 'M';
+            if (count >= 1000) return (count/1000).toFixed(1) + 'K';
+            return count;
         }
     </script>
 </body>
