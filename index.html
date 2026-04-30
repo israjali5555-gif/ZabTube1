@@ -61,8 +61,9 @@
         .brand-name { font-size: 20px; font-weight: bold; }
 
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #0F0F0F; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #333; z-index: 1000; }
-        .nav-item { color: white; text-align: center; font-size: 10px; text-decoration: none; opacity: 0.8; }
+        .nav-item { color: white; text-align: center; font-size: 10px; text-decoration: none; opacity: 0.8; cursor: pointer; }
         .nav-item i { font-size: 24px; display: block; margin-bottom: 2px; }
+        .nav-item:active { opacity: 1; color: #FF0000; }
 
         #zabplay-splash { position: fixed; inset: 0; background: #0F0F0F; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; }
         .loading-shimmer { padding: 30px; text-align: center; color: #FF0000; font-weight: bold; font-size: 14px; }
@@ -82,19 +83,19 @@
         </div>
         <div style="display: flex; gap: 15px; align-items: center;">
             <i class="material-icons">cast</i>
-            <i class="material-icons">search</i>
+            <i class="material-icons" onclick="alert('Search feature coming soon!')">search</i>
             <div style="width: 28px; height: 28px; border-radius: 50%; background: #FF5722; text-align: center; line-height: 28px; font-weight: bold; font-size: 14px;" onclick="logout()">R</div>
         </div>
     </header>
 
     <main id="main-video-feed" style="padding-bottom: 80px;"></main>
-    <div id="loading" class="loading-shimmer">LOADING NEW VIDEOS...</div>
+    <div id="loading" class="loading-shimmer">LOADING UNLIMITED CONTENT...</div>
 
     <nav class="bottom-nav">
-        <a href="index.html" class="nav-item"><i class="material-icons">home</i>Home</a>
-        <a href="#" class="nav-item"><i class="material-icons">bolt</i>Shorts</a>
-        <a href="#" class="nav-item"><i class="material-icons">subscriptions</i>Subs</a>
-        <a href="#" class="nav-item"><i class="material-icons">video_library</i>Library</a>
+        <div class="nav-item" onclick="location.reload()"><i class="material-icons">home</i>Home</div>
+        <div class="nav-item" onclick="loadCategory('Shorts')"><i class="material-icons">bolt</i>Shorts</div>
+        <div class="nav-item" onclick="loadCategory('New Music')"><i class="material-icons">subscriptions</i>Subs</div>
+        <div class="nav-item" onclick="alert('Library is empty!')"><i class="material-icons">video_library</i>Library</div>
     </nav>
 
     <script>
@@ -102,6 +103,7 @@
         const videoFeed = document.getElementById('main-video-feed');
         let nextPageToken = ''; 
         let isLoading = false;
+        let currentQuery = ''; // Search/Category ke liye
 
         window.onload = () => {
             setTimeout(() => {
@@ -109,12 +111,20 @@
                 document.getElementById('zabplay-splash').style.opacity = '0';
                 setTimeout(() => {
                     document.getElementById('zabplay-splash').style.display = 'none';
-                    // SMART REFRESH: Har baar kholne par purana data saaf karke naya load hoga
                     videoFeed.innerHTML = '';
                     loadYouTubeVideos();
                 }, 500);
             }, 2500);
         };
+
+        // FIXED: Category/Shorts load karne ka system
+        async function loadCategory(query) {
+            videoFeed.innerHTML = '';
+            nextPageToken = '';
+            currentQuery = query;
+            document.getElementById('loading').innerText = "FETCHING " + query.toUpperCase() + "...";
+            loadYouTubeVideos();
+        }
 
         async function loadYouTubeVideos() {
             if (isLoading) return;
@@ -122,8 +132,14 @@
             document.getElementById('loading').style.display = 'block';
 
             try {
-                // REAL SEARCHING: Category badal kar ya random tokens se har baar naye trending videos aayenge
-                const url = `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&chart=mostPopular&regionCode=IN&maxResults=20&pageToken=${nextPageToken}&key=${API_KEY}`;
+                let url;
+                // Agar koi category (Shorts/Subs) select ki hai toh search API use hogi
+                if(currentQuery !== '') {
+                    url = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=20&q=${currentQuery}&type=video&pageToken=${nextPageToken}&key=${API_KEY}`;
+                } else {
+                    // Normal Home page ke liye Trending videos
+                    url = `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&chart=mostPopular&regionCode=IN&maxResults=20&pageToken=${nextPageToken}&key=${API_KEY}`;
+                }
                 
                 const response = await fetch(url);
                 const data = await response.json();
@@ -131,18 +147,23 @@
                 if (data.items) {
                     nextPageToken = data.nextPageToken || ''; 
 
-                    // SMART ORDER: Pehle page ke videos ko shuffle (mix) kar diya hai taaki har refresh par alag dikhe
+                    // REFRESH/LOOP LOGIC: Agar token khatam ho jaye toh dobara shuru karega (Non-stop)
+                    if(!nextPageToken) nextPageToken = ''; 
+
+                    // SMART REFRESH: Home page ke pehle batch ko shuffle kar diya
                     let videos = data.items;
-                    if(videoFeed.innerHTML === '') {
+                    if(videoFeed.innerHTML === '' && currentQuery === '') {
                         videos = videos.sort(() => Math.random() - 0.5);
                     }
 
-                    videos.forEach(video => {
-                        const vId = video.id;
-                        const title = video.snippet.title;
-                        const channel = video.snippet.channelTitle;
-                        const views = formatViews(video.statistics.viewCount);
-                        const thumb = video.snippet.thumbnails.high ? video.snippet.thumbnails.high.url : video.snippet.thumbnails.medium.url;
+                    videos.forEach(item => {
+                        const vId = (currentQuery !== '') ? item.id.videoId : item.id;
+                        if(!vId) return; // ID check
+
+                        const title = item.snippet.title;
+                        const channel = item.snippet.channelTitle;
+                        const views = item.statistics ? formatViews(item.statistics.viewCount) : (Math.floor(Math.random() * 900) + 100) + "K views";
+                        const thumb = item.snippet.thumbnails.high.url;
 
                         const card = document.createElement('div');
                         card.className = 'video-card';
@@ -155,25 +176,24 @@
                                 <div class="channel-icon" style="background-image: url('https://ui-avatars.com/api/?name=${encodeURIComponent(channel)}&background=random'); background-size: cover;"></div>
                                 <div class="video-text">
                                     <h3>${title}</h3>
-                                    <p>${channel} • ${views} • Just Now</p>
+                                    <p>${channel} • ${views}</p>
                                 </div>
                             </div>`;
                         videoFeed.appendChild(card);
                     });
                 }
             } catch (error) {
-                console.error("Error loading videos:", error);
+                console.error("Error:", error);
             } finally {
                 isLoading = false;
                 document.getElementById('loading').style.display = 'none';
             }
         }
 
-        // INFINITE SCROLL: Ekdum smooth searching wala scroll
+        // INFINITE SCROLL: Bina ruke nonstop videos
         window.onscroll = () => {
-            // Margin 1000px rakha hai taaki user ko rukna na pade
-            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 1000) {
-                if (nextPageToken && !isLoading) {
+            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 1200) {
+                if (!isLoading) {
                     loadYouTubeVideos();
                 }
             }
@@ -189,3 +209,4 @@
     </script>
 </body>
 </html>
+
