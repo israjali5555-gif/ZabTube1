@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <title>ZabPlay - 15,000+ Videos</title>
+    <title>ZabPlay - Premium Video Experience</title>
     
     <script>
+        // Login check
         if (localStorage.getItem('isLoggedIn') !== 'true') {
             window.location.href = 'login.html';
         }
@@ -15,7 +16,7 @@
     <style>
         body { background:#0F0F0F; margin:0; font-family: Roboto, Arial, sans-serif; color: white; overflow-x: hidden; }
         
-        /* === NAYA CODING WALA LOGO STYLE === */
+        /* === LOGO FIX (NO IMAGE NEEDED) === */
         .zab-logo-box {
             width: 32px; height: 32px;
             background: linear-gradient(135deg, #FF0000 0%, #8B0000 100%);
@@ -31,59 +32,48 @@
         }
 
         .splash-logo-box {
-            width: 120px; height: 120px;
+            width: 100px; height: 100px;
             background: linear-gradient(135deg, #FF0000 0%, #8B0000 100%);
-            border-radius: 25px;
+            border-radius: 20px;
             display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 0 30px rgba(255, 0, 0, 0.7);
-            animation: zoomIn 1s ease-out forwards;
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.6);
         }
         .splash-logo-box::after {
             content: '';
-            border-top: 25px solid transparent; border-bottom: 25px solid transparent;
-            border-left: 40px solid white; margin-left: 6px;
+            border-top: 20px solid transparent; border-bottom: 20px solid transparent;
+            border-left: 35px solid white; margin-left: 5px;
         }
 
-        /* === BAAKI CSS === */
-        .video-card { width: 100%; margin-bottom: 12px; border-bottom: 1px solid #222; animation: fadeIn 0.5s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* === VIDEO FEED STYLE === */
+        .video-card { width: 100%; margin-bottom: 15px; animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
         .thumbnail-container { position: relative; width: 100%; aspect-ratio: 16/9; background: #222; }
-        .thumbnail-container img { width: 100%; height: 100%; display: block; object-fit: cover; }
-        .duration-badge { position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.8); color: white; padding: 2px 6px; font-size: 11px; border-radius: 4px; }
+        .thumbnail-container img { width: 100%; height: 100%; object-fit: cover; }
+        
         .video-info { display: flex; padding: 12px; gap: 12px; }
-        .channel-icon { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; background: #333; }
-        .video-text h3 { font-size: 14px; color: white; margin: 0; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .video-text p { font-size: 12px; color: #aaa; margin: 4px 0 0 0; }
-        a { text-decoration: none; color: inherit; }
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #0F0F0F; display: flex; justify-content: space-around; padding: 8px 0; border-top: 1px solid #333; z-index: 1000; }
-        .nav-item { color: white; text-align: center; font-size: 10px; text-decoration: none; display: flex; flex-direction: column; align-items: center; }
-        .nav-item i { font-size: 24px; margin-bottom: 2px; }
-        .upload-btn-main { font-size: 42px !important; margin-top: -10px; color: #fff; }
-        .loading-shimmer { padding: 30px; text-align: center; color: #aaa; font-size: 14px; font-weight: bold; }
+        .channel-icon { width: 40px; height: 40px; border-radius: 50%; background: #333; }
+        
+        .video-text h3 { font-size: 15px; margin: 0; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .video-text p { font-size: 12px; color: #aaa; margin: 5px 0 0 0; }
 
-        .header { 
-            position: sticky; top: 0; background: #0F0F0F; z-index: 100; 
-            display: flex; align-items: center; justify-content: space-between; 
-            padding: 10px 15px; height: 55px;
-        }
-        .header .brand-container { display: flex; align-items: center; gap: 10px; }
-        .header .brand-name { font-size: 20px; font-weight: bold; color: white; letter-spacing: -0.5px; }
-        .header-icons { display: flex; gap: 18px; align-items: center; }
+        .header { position: sticky; top: 0; background: #0F0F0F; z-index: 1000; display: flex; align-items: center; justify-content: space-between; padding: 10px 15px; border-bottom: 1px solid #222; }
+        .brand-container { display: flex; align-items: center; gap: 10px; }
+        .brand-name { font-size: 20px; font-weight: bold; }
 
-        #zabplay-splash {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #0F0F0F; display: flex; justify-content: center; align-items: center; z-index: 9999;
-        }
-        @keyframes zoomIn {
-            from { transform: scale(0.5); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #0F0F0F; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #333; }
+        .nav-item { color: white; text-align: center; font-size: 10px; text-decoration: none; }
+        .nav-item i { font-size: 24px; display: block; }
+
+        #zabplay-splash { position: fixed; inset: 0; background: #0F0F0F; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; }
+        .loading-shimmer { padding: 20px; text-align: center; color: #FF0000; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div id="zabplay-splash">
         <div class="splash-logo-box"></div>
+        <h2 style="margin-top: 20px; letter-spacing: 2px;">ZABPLAY</h2>
     </div>
 
     <header class="header">
@@ -91,112 +81,75 @@
             <div class="zab-logo-box"></div>
             <span class="brand-name">ZabPlay</span>
         </div>
-        
-        <div class="header-icons">
-            <i class="material-icons">cast</i>
-            <i class="material-icons">notifications_none</i>
+        <div style="display: flex; gap: 15px;">
             <i class="material-icons">search</i>
-            <div id="user-initial" style="width: 26px; height: 26px; border-radius: 50%; background: #FF5722; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: bold;" onclick="logout()">R</div>
+            <div style="width: 28px; height: 28px; border-radius: 50%; background: #FF5722; text-align: center; line-height: 28px; font-weight: bold;" onclick="logout()">R</div>
         </div>
     </header>
 
-    <main class="feed" id="main-video-feed" style="padding-bottom: 80px;"></main>
-    <div id="loading" class="loading-shimmer">🔄 Loading from 15,000+ Videos Library...</div>
+    <main id="main-video-feed" style="padding-bottom: 70px;"></main>
+    <div id="loading" class="loading-shimmer">FETCHING TRENDING VIDEOS...</div>
 
     <nav class="bottom-nav">
         <a href="index.html" class="nav-item"><i class="material-icons">home</i>Home</a>
-        <a href="shorts.html" class="nav-item"><i class="material-icons">bolt</i>Shorts</a>
-        <div class="nav-item" onclick="checkUploadPermission()"><i class="material-icons upload-btn-main">add_circle_outline</i></div>
-        <a href="subscriptions.html" class="nav-item"><i class="material-icons">subscriptions</i>Subs</a>
-        <a href="profile.html" class="nav-item"><i class="material-icons">account_circle</i>You</a>
+        <a href="#" class="nav-item"><i class="material-icons">bolt</i>Shorts</a>
+        <a href="#" class="nav-item"><i class="material-icons">subscriptions</i>Subs</a>
+        <a href="#" class="nav-item"><i class="material-icons">video_library</i>Library</a>
     </nav>
 
     <script>
-        /* === SPLASH HIDE LOGIC === */
-        window.addEventListener('load', function() {
-            setTimeout(function() {
-                const splash = document.getElementById('zabplay-splash');
-                if(splash) {
-                    splash.style.transition = 'opacity 0.5s ease';
-                    splash.style.opacity = '0';
-                    setTimeout(() => splash.remove(), 500);
-                }
-            }, 2500);
-        });
+        // HIDE SPLASH
+        window.onload = () => {
+            setTimeout(() => {
+                document.getElementById('zabplay-splash').style.display = 'none';
+                loadYouTubeVideos();
+            }, 2000);
+        };
 
+        const API_KEY = 'AIzaSyDq0kXgyqtOFXPjytI5yw5tuIZYl-xuTFs'; // AAPKI NAYI KEY
         const videoFeed = document.getElementById('main-video-feed');
-        let isLoading = false;
-        const displayedVideos = new Set();
-        
-        const megaChannels = [
-            'UCq-Fj5jknLsUf-MWSy4_brA', 'UCffXmS6lX_3-96mE9pYv6nw', 'UCttspZesZIDEwwpVIgoZtWQ', 
-            'UC55IWq7n_6oK6-63_XU3T2w', 'UCi2E6n_S8uH566X4G698F_A', 'UCX6OQ3DkcsbYNE6H8uQQuVA',
-            'UC2to_M9Wf5m6f5Uf_o6uFcA', 'UCsynM4_V99A7l9Zp3_f_S2rQ', 'UC689oVpZOn_N_n_u08v-qkg',
-            'UCk8GzjMOrvo8Ky_meK76w6A', 'UC3SshVq_E6eXpA_m4_X3C6Q', 'UC_aEa8K-EOJ3D6gOs7HcyNg',
-            'UCpEhnqL0y41EpW2TvWAHD7Q', 'UCm7E7GZz_fB0sZzVbV_yYog', 'UC07-dOwgza1IguKA86jqx9w',
-            'UCv2-u_8K-R_O-q6S-P_I8uy', 'UC0T_p-Z9_vLzX7l-L8G_j7A', 'UC89V_8N_f0f_fG_6_v8fS6A',
-            'UC-K_S_W2_mX6E_R-zXU_K6A', 'UCF_fDSgPsS7C_S6DAt_oOzA', 'UC-lHJZR3Gqxm24_Vd_AJ5Yw',
-            'UC7eHUXK_jS7Z-Fui_X7pA-w', 'UC-0p_YvYfE5mS9_rM_fGq6w', 'UCq9LpM_x_bB20-O96h-fX7A',
-            'UC3SshVq_E6eXpA_m4_X3C6Q', 'UCU0D87mZ0A1K2uO0C6K9NlA', 'UCCu_996_rF4Fv8C6X4L_O_A'
-        ];
 
-        async function loadUnlimitedFeed() {
-            if (isLoading) return;
-            isLoading = true;
-            const batch = megaChannels.sort(() => 0.5 - Math.random()).slice(0, 20);
-            const fetchPromises = batch.map(id => 
-                fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://www.youtube.com/feeds/videos.xml?channel_id=${id}&nocache=${Math.random()}`)
-                .then(res => res.json())
-                .catch(() => ({items: []}))
-            );
-            const allResults = await Promise.all(fetchPromises);
-            allResults.forEach(data => {
+        async function loadYouTubeVideos() {
+            try {
+                // Fetching Trending Videos using your API Key
+                const response = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics,contentDetails&chart=mostPopular&regionCode=IN&maxResults=20&key=${API_KEY}`);
+                const data = await response.json();
+
                 if (data.items) {
                     data.items.forEach(video => {
-                        const vId = video.link.split('v=')[1];
-                        if (!displayedVideos.has(vId)) {
-                            displayedVideos.add(vId);
-                            const isM = video.title.toLowerCase().match(/(movie|film|full|drama|episode)/);
-                            const dur = isM ? Math.floor(Math.random() * 60 + 120) + ":" + Math.floor(Math.random() * 59).toString().padStart(2, '0') : Math.floor(Math.random() * 8 + 3) + ":" + Math.floor(Math.random() * 59).toString().padStart(2, '0');
-                            const views = (Math.random() * 90 + 1).toFixed(1) + "M";
-                            const card = document.createElement('div');
-                            card.className = 'video-card';
-                            card.innerHTML = `
-                                <a href="player.html?v=${vId}&t=${encodeURIComponent(video.title)}&c=${encodeURIComponent(video.author)}">
-                                    <div class="thumbnail-container">
-                                        <img src="https://img.youtube.com/vi/${vId}/maxresdefault.jpg" onerror="this.src='https://img.youtube.com/vi/${vId}/mqdefault.jpg'">
-                                        <span class="duration-badge">${dur}</span>
+                        const vId = video.id;
+                        const title = video.snippet.title;
+                        const channel = video.snippet.channelTitle;
+                        const views = parseInt(video.statistics.viewCount).toLocaleString() + " views";
+                        const thumb = video.snippet.thumbnails.high.url;
+
+                        const card = document.createElement('div');
+                        card.className = 'video-card';
+                        card.innerHTML = `
+                            <div onclick="window.location.href='player.html?v=${vId}'">
+                                <div class="thumbnail-container">
+                                    <img src="${thumb}">
+                                </div>
+                                <div class="video-info">
+                                    <div class="channel-icon" style="background-image: url('https://ui-avatars.com/api/?name=${channel}'); background-size: cover;"></div>
+                                    <div class="video-text">
+                                        <h3>${title}</h3>
+                                        <p>${channel} • ${views}</p>
                                     </div>
-                                    <div class="video-info">
-                                        <img src="https://ui-avatars.com/api/?name=${video.author}&background=random" class="channel-icon">
-                                        <div class="video-text">
-                                            <h3>${video.title}</h3>
-                                            <p>${video.author} • ${views} views • Trending</p>
-                                        </div>
-                                    </div>
-                                </a>`;
-                            videoFeed.appendChild(card);
-                        }
+                                </div>
+                            </div>`;
+                        videoFeed.appendChild(card);
                     });
+                    document.getElementById('loading').style.display = 'none';
                 }
-            });
-            isLoading = false;
+            } catch (error) {
+                console.error("Error loading videos:", error);
+                document.getElementById('loading').innerText = "Limit Reached or Billing Issue";
+            }
         }
 
-        window.onscroll = () => {
-            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 2000) {
-                loadUnlimitedFeed();
-            }
-        };
-
-        window.onload = async () => {
-            await loadUnlimitedFeed(); 
-            await loadUnlimitedFeed(); 
-            await loadUnlimitedFeed(); 
-        };
-
         function logout() { localStorage.removeItem('isLoggedIn'); window.location.href = 'login.html'; }
-        function checkUploadPermission() { }
     </script>
 </body>
 </html>
+
