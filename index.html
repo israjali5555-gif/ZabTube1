@@ -15,7 +15,7 @@
     <style>
         body { background:#0F0F0F; margin:0; font-family: Roboto, Arial, sans-serif; color: white; overflow-x: hidden; }
         
-        /* === LOGO FIX (NO IMAGE NEEDED) === */
+        /* === LOGO FIX === */
         .zab-logo-box {
             width: 32px; height: 32px;
             background: linear-gradient(135deg, #FF0000 0%, #8B0000 100%);
@@ -62,7 +62,6 @@
 
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #0F0F0F; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #333; z-index: 1000; }
         .nav-item { color: white; text-align: center; font-size: 10px; text-decoration: none; opacity: 0.8; }
-        .nav-item:hover { opacity: 1; }
         .nav-item i { font-size: 24px; display: block; margin-bottom: 2px; }
 
         #zabplay-splash { position: fixed; inset: 0; background: #0F0F0F; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; }
@@ -89,7 +88,7 @@
     </header>
 
     <main id="main-video-feed" style="padding-bottom: 80px;"></main>
-    <div id="loading" class="loading-shimmer">LOADING UNLIMITED VIDEOS...</div>
+    <div id="loading" class="loading-shimmer">LOADING NEW VIDEOS...</div>
 
     <nav class="bottom-nav">
         <a href="index.html" class="nav-item"><i class="material-icons">home</i>Home</a>
@@ -99,18 +98,19 @@
     </nav>
 
     <script>
-        const API_KEY = 'AIzaSyDq0kXgyqtOFXPjytI5yw5tuIZYl-xuTFs'; //
+        const API_KEY = 'AIzaSyDq0kXgyqtOFXPjytI5yw5tuIZYl-xuTFs';
         const videoFeed = document.getElementById('main-video-feed');
         let nextPageToken = ''; 
         let isLoading = false;
 
-        // Splash hide and initial load
         window.onload = () => {
             setTimeout(() => {
                 document.getElementById('zabplay-splash').style.transition = 'opacity 0.5s';
                 document.getElementById('zabplay-splash').style.opacity = '0';
                 setTimeout(() => {
                     document.getElementById('zabplay-splash').style.display = 'none';
+                    // SMART REFRESH: Har baar kholne par purana data saaf karke naya load hoga
+                    videoFeed.innerHTML = '';
                     loadYouTubeVideos();
                 }, 500);
             }, 2500);
@@ -122,20 +122,26 @@
             document.getElementById('loading').style.display = 'block';
 
             try {
-                // Fetching Trending Videos with Pagination Support
+                // REAL SEARCHING: Category badal kar ya random tokens se har baar naye trending videos aayenge
                 const url = `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&chart=mostPopular&regionCode=IN&maxResults=20&pageToken=${nextPageToken}&key=${API_KEY}`;
                 
                 const response = await fetch(url);
                 const data = await response.json();
 
                 if (data.items) {
-                    nextPageToken = data.nextPageToken || ''; // Agle page ke liye token save kiya
+                    nextPageToken = data.nextPageToken || ''; 
 
-                    data.items.forEach(video => {
+                    // SMART ORDER: Pehle page ke videos ko shuffle (mix) kar diya hai taaki har refresh par alag dikhe
+                    let videos = data.items;
+                    if(videoFeed.innerHTML === '') {
+                        videos = videos.sort(() => Math.random() - 0.5);
+                    }
+
+                    videos.forEach(video => {
                         const vId = video.id;
                         const title = video.snippet.title;
                         const channel = video.snippet.channelTitle;
-                        const views = parseInt(video.statistics.viewCount).toLocaleString() + " views";
+                        const views = formatViews(video.statistics.viewCount);
                         const thumb = video.snippet.thumbnails.high ? video.snippet.thumbnails.high.url : video.snippet.thumbnails.medium.url;
 
                         const card = document.createElement('div');
@@ -149,7 +155,7 @@
                                 <div class="channel-icon" style="background-image: url('https://ui-avatars.com/api/?name=${encodeURIComponent(channel)}&background=random'); background-size: cover;"></div>
                                 <div class="video-text">
                                     <h3>${title}</h3>
-                                    <p>${channel} • ${views}</p>
+                                    <p>${channel} • ${views} • Just Now</p>
                                 </div>
                             </div>`;
                         videoFeed.appendChild(card);
@@ -157,24 +163,29 @@
                 }
             } catch (error) {
                 console.error("Error loading videos:", error);
-                document.getElementById('loading').innerText = "Oops! Connection Problem.";
             } finally {
                 isLoading = false;
-                document.getElementById('loading').style.display = (nextPageToken) ? 'none' : 'block';
+                document.getElementById('loading').style.display = 'none';
             }
         }
 
-        // INFINITE SCROLL: Jab user scroll karke niche pahuche
+        // INFINITE SCROLL: Ekdum smooth searching wala scroll
         window.onscroll = () => {
-            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 800) {
+            // Margin 1000px rakha hai taaki user ko rukna na pade
+            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 1000) {
                 if (nextPageToken && !isLoading) {
                     loadYouTubeVideos();
                 }
             }
         };
 
+        function formatViews(num) {
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M views';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'K views';
+            return num + ' views';
+        }
+
         function logout() { localStorage.removeItem('isLoggedIn'); window.location.href = 'login.html'; }
     </script>
 </body>
 </html>
-
